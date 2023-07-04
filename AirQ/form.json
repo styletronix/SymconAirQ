@@ -1,0 +1,13 @@
+{
+  "elements": [
+
+  ],
+  "actions": [
+    // {
+    //   "type": "Button",
+    //   "label": "Restore Variable defaults",
+    //   "onClick": "SXHMREP_RestoreActionScripts($id);"
+    // }
+  ],
+  "status": []
+}
