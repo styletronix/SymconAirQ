@@ -50,7 +50,7 @@ class AirQ extends IPSModule
 	{
 		parent::ApplyChanges();
 
-		$this->SetTimerInterval('update', $this->ReadPropertyInteger('refresh'));
+		$this->SetTimerInterval('update', $this->ReadPropertyInteger('refresh') * 1000);
 		$this->Update();
 	}
 	private function parseData($data){
@@ -144,6 +144,10 @@ class AirQ extends IPSModule
 
 		try {
 			$data = json_decode($json, true);
+			if (!$data || !$data['content']) {
+				$this->SetStatus(202);
+				return;
+			}
 		} catch (Exception $ex) {
 			$this->SetStatus(202);
 			return;
