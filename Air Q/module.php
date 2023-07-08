@@ -55,7 +55,7 @@ class AirQ extends IPSModule
 	}
 	private function parseData($data){
 		foreach ($data as $key => $value) {
-			$valID = $this->GetIDForIdent($key);
+			$valID = @$this->GetIDForIdent($key);
 			if (!$valID) {
 				if ($this->ReadPropertyBoolean ('dynamicValueCreation') == false){
 					continue;
@@ -94,7 +94,7 @@ class AirQ extends IPSModule
 
 				for ($i = 1; $i < count($value); $i++) {
 					$indent = 'value_' . $i;
-					$val2ID = IPS_GetObjectIDByIdent($indent, $valID);
+					$val2ID = @IPS_GetObjectIDByIdent($indent, $valID);
 					if (!$val2ID) {
 						if ($this->ReadPropertyBoolean('dynamicValueCreation') == false) {
 							continue;
