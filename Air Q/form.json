@@ -20,7 +20,7 @@
             "name": "refresh",
             "caption": "Refresh interval",
             "suffix": "seconds"
-        },
+        }
     ],
     "actions": [
         {
