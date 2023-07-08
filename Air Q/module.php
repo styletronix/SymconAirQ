@@ -137,6 +137,7 @@ class AirQ extends IPSModule
 
 		try{
 			$json = $this->getDataFromUrl($url);
+			$this->SendDebug("getDataFromUrl", $json, 0);
 		}catch(Exception $ex){
 			$this->SetStatus(201);
 			return;
@@ -144,6 +145,8 @@ class AirQ extends IPSModule
 
 		try {
 			$data = json_decode($json, true);
+			$this->SendDebug("json_decode", json_encode($data), 0);
+			
 			if (!$data || !$data['content']) {
 				$this->SetStatus(202);
 				return;
@@ -155,6 +158,7 @@ class AirQ extends IPSModule
 
 		try {
 			$data = $this->decryptString($data['content'], $pw);
+			$this->SendDebug("decryptString", $data, 0);
 			if (!$data){
 				$this->SetStatus(203);
 				return;
