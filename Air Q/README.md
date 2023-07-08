@@ -1,4 +1,4 @@
-# HMRepeat
+# Air Q
 Beschreibung des Moduls.
 
 ### Inhaltsverzeichnis
@@ -17,14 +17,24 @@ Beschreibung des Moduls.
 
 ### 2. Voraussetzungen
 
-- IP-Symcon ab Version 6.0
+- IP-Symcon ab Version 5.5
 
 ### 3. Software-Installation
 
+* Über den Module Store das 'Air Q'-Modul installieren.
+* Alternativ über das Module Control folgende URL hinzufügen
 
 ### 4. Einrichten der Instanzen in IP-Symcon
 
+ Unter 'Instanz hinzufügen' kann das 'Air Q'-Modul mithilfe des Schnellfilters gefunden werden.  
+	- Weitere Informationen zum Hinzufügen von Instanzen in der [Dokumentation der Instanzen](https://www.symcon.de/service/dokumentation/konzepte/instanzen/#Instanz_hinzufügen)
 
+__Konfigurationsseite__:
+
+Name     | Beschreibung
+-------- | ------------------
+         |
+         |
 
 ### 5. Statusvariablen und Profile
 
@@ -50,8 +60,8 @@ Die Funktionalität, die das Modul im WebFront bietet.
 
 ### 7. PHP-Befehlsreferenz
 
-`boolean SXHMREP_BeispielFunktion(integer $InstanzID);`
+`boolean SXAIRQ_BeispielFunktion(integer $InstanzID);`
 Erklärung der Funktion.
 
 Beispiel:
-`SXHMREP_BeispielFunktion(12345);`
+`SXAIRQ_BeispielFunktion(12345);`
