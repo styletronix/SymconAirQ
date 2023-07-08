@@ -145,12 +145,12 @@ class AirQ extends IPSModule
 
 		try {
 			$data = json_decode($json, true);
-			$this->SendDebug("json_decode", json_encode($data), 0);
-			
 			if (!$data || !$data['content']) {
 				$this->SetStatus(202);
 				return;
 			}
+			$this->SendDebug("json_decode", $data['content'], 0);
+
 		} catch (Exception $ex) {
 			$this->SetStatus(202);
 			return;
@@ -163,11 +163,13 @@ class AirQ extends IPSModule
 				$this->SetStatus(203);
 				return;
 			}
+			$data = json_decode($data, true);
 		} catch (Exception $ex) {
 			$this->SetStatus(203);
 			return;
 		}
 
+		
 		$this->parseData($data);
 
 		$this->SetStatus(102);
