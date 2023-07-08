@@ -3,7 +3,7 @@
         {
             "type": "CheckBox",
             "name": "active",
-            "caption": "Enable Instance"
+            "caption": "Enable"
         },
         {
             "type": "ValidationTextBox",
@@ -13,7 +13,7 @@
         {
             "type": "PasswordTextBox",
             "name": "password",
-            "caption": "Passwort"
+            "caption": "Password"
         },
         {
             "type": "NumberSpinner",
@@ -24,7 +24,7 @@
         {
             "type": "CheckBox",
             "name": "dynamicValueCreation",
-            "caption": "Create all received variables."
+            "caption": "Create all received variables"
         }
     ],
     "actions": [],

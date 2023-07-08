@@ -1,8 +1,17 @@
 {
     "translations": {
         "de": {
-            "Translation 1": "Übersetzung 1",
-            "Translation 2": "Übersetzung 2"
+            "Enable": "Aktivieren",
+            "URL to Air-Q": "URL zum Air-Q",
+            "Password": "Kennwort",
+            "Refresh interval": "Aktualisierungsinterval",
+            "seconds": "Sekunden",
+            "Create all received variables": "Erstelle Variablen für alle empfangenen Datenfelder",
+            "Connected": "Verbunden",
+            "Could not download Data from Air-Q": "Download von Air-Q nicht möglich",
+            "Error in received data": "Fehlerhafte Daten empfangen",
+            "Error while decrypting. Maybe wrong Password?": "Fehler beim entschlüsseln der Daten. Möglicherweise falsches passwort?",
+            "URL or password missing.": "URL oder Kennwort fehlt."
         }
     }
 }
