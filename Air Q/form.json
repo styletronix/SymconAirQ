@@ -48,6 +48,11 @@
             "code": 203,
             "icon": "error",
             "caption": "Error while decrypting. Maybe wrong Password?"
+        },
+        {
+            "code": 204,
+            "icon": "error",
+            "caption": "URL or password missing."
         }
     ]
 }
