@@ -151,6 +151,10 @@ class AirQ extends IPSModule
 
 		try {
 			$data = $this->decryptString($data['content'], $pw);
+			if (!$data){
+				$this->SetStatus(203);
+				return;
+			}
 		} catch (Exception $ex) {
 			$this->SetStatus(203);
 			return;
