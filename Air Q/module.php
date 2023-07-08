@@ -119,7 +119,6 @@ class AirQ extends IPSModule
 			$data = $this->decryptString($data['content'], $pw);
 			$this->SendDebug("3. decryptString", $data, 0);
 			$data = json_decode($data, true);
-			$this->SendDebug("4. json_decode decrypted", $data, 0);
 
 			if (count($data) > 0) {
 				echo "OK";
