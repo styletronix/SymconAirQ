@@ -7,19 +7,11 @@ class AirQ extends IPSModule
 	{
 		parent::Create();
 
-<<<<<<< HEAD
 		$this->RegisterPropertyBoolean('active', false);
 		$this->RegisterPropertyString('url', 'http://');
 		$this->RegisterPropertyString('password','');
 		$this->RegisterPropertyInteger("refresh", 5);
 		$this->RegisterPropertyBoolean('dynamicValueCreation', false);
-=======
-		$this->RegisterPropertyBoolean('active');
-		$this->RegisterPropertyString('url');
-		$this->RegisterPropertyString('password');
-		$this->RegisterPropertyInteger("refresh", 5);
-		$this->RegisterPropertyBoolean('dynamicValueCreation');
->>>>>>> 19ae0fda29aa9229c3ae32298cf829e68edb0777
 
 		$this->RegisterVariableInteger('timestamp', 'Zeitpunkt der Messung');
 		$this->RegisterVariableString('DeviceID', 'DeviceID') ;
