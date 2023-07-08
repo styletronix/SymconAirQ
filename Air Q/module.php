@@ -10,7 +10,7 @@ class AirQ extends IPSModule
 		$this->RegisterPropertyBoolean('active', false);
 		$this->RegisterPropertyString('url', 'http://');
 		$this->RegisterPropertyString('password','');
-		$this->RegisterPropertyInteger("refresh", 5);
+		$this->RegisterPropertyInteger("refresh", 10);
 		$this->RegisterPropertyBoolean('dynamicValueCreation', false);
 
 		$this->RegisterVariableInteger('timestamp', 'Zeitpunkt der Messung');
@@ -38,7 +38,7 @@ class AirQ extends IPSModule
 		$this->RegisterVariableFloat('dewpt', 'Taupunkt');
 		
 
-		$this->RegisterTimer("update", 0, 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "update");');
+		$this->RegisterTimer("update", $this->ReadPropertyInteger('refresh') * 1000, 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "update");');
 	}
 
 	public function Destroy()
