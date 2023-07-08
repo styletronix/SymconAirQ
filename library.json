@@ -1,12 +1,12 @@
 {
-    "id": "{437879BB-CF7F-4F7B-9993-722CB7155F8C}",
-    "name": "AirQ",
+    "id": "{26D9C70E-30E0-4FF0-9216-26D780549667}",
+    "name": "Air Q",
     "author": "Styletronix.net",
     "url": "https://github.com/styletronix/SymconAirQ",
     "compatibility": {
-        "version": "6.0"
+        "version": "5.5"
     },
     "version": "0.1",
-    "build": 0,
-    "date": 0
+    "build": 1,
+    "date": 5
 }

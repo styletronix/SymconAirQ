@@ -1,0 +1,53 @@
+{
+    "elements": [
+        {
+            "type": "CheckBox",
+            "name": "active",
+            "caption": "Enable Instance"
+        },
+        {
+            "type": "ValidationTextBox",
+            "name": "url",
+            "caption": "URL to Air-Q"
+        },
+        {
+            "type": "PasswordTextBox",
+            "name": "password",
+            "caption": "Passwort"
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "refresh",
+            "caption": "Refresh interval",
+            "suffix": "seconds"
+        },
+        {
+            "type": "CheckBox",
+            "name": "dynamicValueCreation",
+            "caption": "Create all received variables."
+        }
+    ],
+    "actions": [],
+    "status": [
+        {
+            "code": 102,
+            "icon": "active",
+            "caption": "Connected"
+        },
+        {
+            "code": 201,
+            "icon": "error",
+            "caption": "Could not download Data from Air-Q"
+        },
+        {
+            "code": 202,
+            "icon": "error",
+            "caption": "Error in received data"
+        },
+        {
+            "code": 203,
+            "icon": "error",
+            "caption": "Error while decrypting. Maybe wrong Password?"
+        }
+    ]
+}

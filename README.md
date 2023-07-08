@@ -1,11 +1,6 @@
-# HMRepeat
+# Air Q
 
+Folgende Module beinhaltet das Air Q Repository:
 
-Noch in Entwicklung !!!
-Hat derzeit keine Funktion !!
-
-
-
-Folgende Module beinhaltet das HMRepeat Repository:
-
-- __HMRepeat__ ([Dokumentation](HMRepeat))  
+- __Air Q__ ([Dokumentation](Air%20Q))  
+	Kurze Beschreibung des Moduls.
