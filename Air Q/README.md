@@ -1,5 +1,5 @@
 # Air Q
-Beschreibung des Moduls.
+Dieses Modul verbindet sich mit einem über HTTP erreichbaren Air-Q und liest dessen Daten aus.
 
 ### Inhaltsverzeichnis
 
@@ -12,17 +12,23 @@ Beschreibung des Moduls.
 7. [PHP-Befehlsreferenz](#7-php-befehlsreferenz)
 
 ### 1. Funktionsumfang
+- Zyklisches auslesen aller Messwerte des Air-Q.
+
+#### In Planung
+- Bildung von Mittelwerten für verschiedene Zeiträume wie für Auswertung der Warnschwellen nach WHO oder EU Richtlinien notwendig.
 
 *
 
 ### 2. Voraussetzungen
 
 - IP-Symcon ab Version 5.5
+- Air-Q von https://www.air-q.com/ (Getestet mit der Science-Version)
 
 ### 3. Software-Installation
 
 * Über den Module Store das 'Air Q'-Modul installieren.
-* Alternativ über das Module Control folgende URL hinzufügen
+* Alternativ über das Module Control folgende URL hinzufügen:
+https://github.com/styletronix/SymconAirQ
 
 ### 4. Einrichten der Instanzen in IP-Symcon
 
@@ -33,21 +39,23 @@ __Konfigurationsseite__:
 
 Name     | Beschreibung
 -------- | ------------------
-         |
-         |
+URL      | Link zum Air-Q. z.B. http://192.168.0.5
+Kennwort | Gerätekennwort
+Aktualisierungsinterval | Automatische Aktualisierung alle X Sekunden.
 
 ### 5. Statusvariablen und Profile
 
-Die Statusvariablen/Kategorien werden automatisch angelegt. Das Löschen einzelner kann zu Fehlfunktionen führen.
+Die Standard Statusvariablen werden automatisch angelegt. Das Löschen einzelner Variablen führt nicht zur fehlfunktion. Diese werden aber beim nächsten start des Moduls erneut angelegt.
+
+unbekannte Variablen und Sensoren können in der Konfiguration anhand der gelieferten Daten des Air-Q automatisch erstellt werden.
 
 #### Statusvariablen
 
-Name   | Typ     | Beschreibung
------- | ------- | ------------
-       |         |
-       |         |
+Siehe Air-Q Dokumentation.
 
 #### Profile
+
+Noch in entwicklung!
 
 Name   | Typ
 ------ | -------
@@ -56,12 +64,36 @@ Name   | Typ
 
 ### 6. WebFront
 
-Die Funktionalität, die das Modul im WebFront bietet.
+Das Modul besitzt keine spezielle WebFront funktion.
 
 ### 7. PHP-Befehlsreferenz
 
-`boolean SXAIRQ_BeispielFunktion(integer $InstanzID);`
-Erklärung der Funktion.
+`void SXAIRQ_CreateUnknownVariables(integer $InstanzID);`
+Erstellt für alle unbekannten Sensordaten des Air-Q eigene Variablen.
+Der Air-Q muss vor der Verwendung dieser Funktion vollständig konfiguriert und erreichbar sein.
 
 Beispiel:
-`SXAIRQ_BeispielFunktion(12345);`
+`SXAIRQ_CreateUnknownVariables(12345);`
+
+
+
+`bool SXAIRQ_TestConnection(integer $InstanzID);`
+Prüft, ob der Air-Q erreichbar ist und die Daten korrekt ausgelesen werden können.
+Der Air-Q muss vor der Verwendung dieser Funktion vollständig konfiguriert und erreichbar sein.
+
+Liefert 'true' bei erfolg und 'false' bei Fehler.
+Zusätzlich sind Informationen im DEBUG Fenster zu finden.
+
+Beispiel:
+`$success = SXAIRQ_TestConnection(12345);`
+
+
+
+`void SXAIRQ_Update(integer $InstanzID);`
+Aktualisiert die Daten des Air-Q sofort.
+Der Air-Q muss vor der Verwendung dieser Funktion vollständig konfiguriert und erreichbar sein.
+
+Beispiel:
+`SXAIRQ_Update(12345);`
+
+

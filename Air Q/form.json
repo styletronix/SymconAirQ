@@ -21,13 +21,19 @@
             "caption": "Refresh interval",
             "suffix": "seconds"
         },
+    ],
+    "actions": [
         {
-            "type": "CheckBox",
-            "name": "dynamicValueCreation",
-            "caption": "Create all received variables"
+            "type": "Button",
+            "caption": "Create all received variables",
+            "onClick": "SXAIRQ_CreateUnknownVariables($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Test connection",
+            "onClick": "SXAIRQ_TestConnection($id);"
         }
     ],
-    "actions": [],
     "status": [
         {
             "code": 102,

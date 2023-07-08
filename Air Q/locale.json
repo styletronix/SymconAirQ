@@ -11,7 +11,8 @@
             "Could not download Data from Air-Q": "Download von Air-Q nicht möglich",
             "Error in received data": "Fehlerhafte Daten empfangen",
             "Error while decrypting. Maybe wrong Password?": "Fehler beim entschlüsseln der Daten. Möglicherweise falsches passwort?",
-            "URL or password missing.": "URL oder Kennwort fehlt."
+            "URL or password missing.": "URL oder Kennwort fehlt.",
+            "Test connection": "Verbindung prüfen"
         }
     }
 }
