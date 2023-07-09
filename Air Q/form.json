@@ -20,6 +20,139 @@
             "name": "refresh",
             "caption": "Refresh interval",
             "suffix": "seconds"
+        },
+        {
+            "type": "Tree",
+            "name": "Sensors",
+            "caption": "Sensors",
+            "add": true,
+            "delete": true,
+            "sort": {
+                "column": "FriendlyName",
+                "direction": "ascending"
+            },
+            "columns": [
+                {
+                    "caption": "Sensor",
+                    "name": "Sensor",
+                    "width": "50px",
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "FriendlyName",
+                    "name": "FriendlyName",
+                    "width": "auto",
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "Multiplicator",
+                    "name": "Multiplicator",
+                    "width": "60px",
+                    "add": 1,
+                    "edit": {
+                        "type": "NumberSpinner",
+                        "digits": 6
+                    }
+                },
+                {
+                    "caption": "Offset",
+                    "name": "Offset",
+                    "width": "60px",
+                    "add": 1,
+                    "edit": {
+                        "type": "NumberSpinner",
+                        "digits": 3
+                    }
+                },
+                {
+                    "caption": "Upper Limit",
+                    "name": "UpperLimit",
+                    "width": "auto",
+                    "add": 0,
+                    "edit": {
+                        "type": "NumberSpinner",
+                        "digits": 3
+                    }
+                },
+                {
+                    "caption": "Lower Limit",
+                    "name": "LowerLimit",
+                    "width": "auto",
+                    "add": 0,
+                    "edit": {
+                        "type": "NumberSpinner",
+                        "digits": 3
+                    }
+                },
+                {
+                    "caption": "Averages",
+                    "name": "Averages",
+                    "width": "auto",
+                    "edit": {
+                        "type": "Tree",
+                        "add": true,
+                        "delete": true,
+                        "columns": [
+                            {
+                                "caption": "Timespan",
+                                "name": "Timespan",
+                                "width": "auto",
+                                "add": 60,
+                                "edit": {
+                                    "type": "NumberSpinner",
+                                    "suffix": "minutes"
+                                }
+                            },
+                            {
+                                "caption": "is Floating",
+                                "name": "IsFloating",
+                                "width": "auto",
+                                "add": true,
+                                "edit": {
+                                    "type": "CheckBox"
+                                }
+                            },{
+                                "caption": "Upper Limit",
+                                "name": "UpperLimit",
+                                "width": "auto",
+                                "add": 0,
+                                "edit": {
+                                    "type": "NumberSpinner",
+                                    "digits": 3
+                                }
+                            },
+                            {
+                                "caption": "Lower Limit",
+                                "name": "LowerLimit",
+                                "width": "auto",
+                                "add": 0,
+                                "edit": {
+                                    "type": "NumberSpinner",
+                                    "digits": 3
+                                }
+                            },
+                            {
+                                "caption": "Severity",
+                                "name": "Severity",
+                                "width": "auto",
+                                "add": 1,
+                                "edit": {
+                                    "type": "NumberSpinner"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ],
+            "values": [
+                
+            ]
         }
     ],
     "actions": [

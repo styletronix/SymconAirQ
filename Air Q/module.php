@@ -11,6 +11,7 @@ class AirQ extends IPSModule
 		$this->RegisterPropertyString('url', 'http://');
 		$this->RegisterPropertyString('password','');
 		$this->RegisterPropertyInteger("refresh", 10);
+		$this->RegisterPropertyString('Sensors','');
 
 		$this->RegisterVariableInteger('timestamp', 'Zeitpunkt der Messung');
 		$this->RegisterVariableString('DeviceID', 'DeviceID') ;
@@ -35,7 +36,6 @@ class AirQ extends IPSModule
 		$this->RegisterVariableFloat('humidity', 'Luftfeuchtigkeit (relativ)');
 		$this->RegisterVariableFloat('humidity', 'Luftfeuchtigkeit (absolut)');
 		$this->RegisterVariableFloat('dewpt', 'Taupunkt');
-		
 
 		$this->RegisterTimer("update", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "update");');
 	}
@@ -44,7 +44,6 @@ class AirQ extends IPSModule
 	{
 		parent::Destroy();
 	}
-
 	public function CreateUnknownVariables(){
 		$pw = $this->ReadPropertyString('password');
 		$url = trim($this->ReadPropertyString('url'), '\\') . '/data';
@@ -109,24 +108,49 @@ class AirQ extends IPSModule
 	public function TestConnection(){
 		try{
 			$pw = $this->ReadPropertyString('password');
+			if (!$pw){
+				echo ('Password missing');
+				return false;
+			}
 			$url = trim($this->ReadPropertyString('url'), '\\') . '/data';
+			if (!$url) {
+				echo ('URL missing');
+				return false;
+			}
+
 			$json = $this->getDataFromUrl($url);
 			$this->SendDebug("1. getDataFromUrl", $json, 0);
+			if (!$json) {
+				echo ('Could not get data from device.');
+				return false;
+			}
 
 			$data = json_decode($json, true);
 			$this->SendDebug("2. json_decode encrypted", $data['content'], 0);
+			if (!is_array($data) || count($data) == 0) {
+				echo ('Could not get data from device.');
+				return false;
+			}
 
 			$data = $this->decryptString($data['content'], $pw);
 			$this->SendDebug("3. decryptString", $data, 0);
-			$data = json_decode($data, true);
-
-			if (count($data) > 0) {
-				echo "OK";
-				return true;
+			if (!$data) {
+				echo ('Could not decrypt data.');
+				return false;
 			}
+
+			$data = json_decode($data, true);
+			if (!is_array($data) || count($data) == 0) {
+				echo ('Could not decrypt data from device.');
+				return false;
+			}
+
+			echo "OK";
+			return true;
 		}catch(Exception $ex){
 			$this->SendDebug("Error", $ex, 0);
 		}
+
 		echo "Failed";
 		return false;
 	}
