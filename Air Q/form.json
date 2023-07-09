@@ -22,15 +22,12 @@
             "suffix": "seconds"
         },
         {
-            "type": "Tree",
+            "type": "List",
             "name": "Sensors",
             "caption": "Sensors",
             "add": true,
             "delete": true,
-            "sort": {
-                "column": "FriendlyName",
-                "direction": "ascending"
-            },
+            "changeOrder": true,
             "columns": [
                 {
                     "caption": "Sensor",
@@ -91,12 +88,12 @@
                     }
                 },
                 {
-                    "caption": "Averages",
-                    "name": "Averages",
+                    "caption": "Limits",
+                    "name": "Limits",
                     "width": "auto",
                     "add": [],
                     "edit": {
-                        "type": "Tree",
+                        "type": "List",
                         "add": true,
                         "delete": true,
                         "columns": [
@@ -152,7 +149,18 @@
                 }
             ],
             "values": [
-
+{
+"Sensor": "oxygen",
+"FriendlyName": "Sauerstoff",
+"Multiplicator": 1 ,
+"Offset": 0,
+"Limits": [{
+    "Timespan": 0,
+    "UpperLimit": 0,
+    "LowerLimit": 0,
+    "Severity": 1
+}]
+}
             ]
         }
     ],
