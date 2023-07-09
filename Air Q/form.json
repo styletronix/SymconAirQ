@@ -32,7 +32,7 @@
                 {
                     "caption": "Sensor",
                     "name": "Sensor",
-                    "width": "75px",
+                    "width": "90px",
                     "add": "",
                     "edit": {
                         "type": "ValidationTextBox"
@@ -41,7 +41,7 @@
                 {
                     "caption": "FriendlyName",
                     "name": "FriendlyName",
-                    "width": "auto",
+                    "width": "250px",
                     "add": "",
 
                     "edit": {
@@ -52,7 +52,7 @@
                     "caption": "Multiplicator",
                     "name": "Multiplicator",
                     "add": 1,
-                    "width": "75px",
+                    "width": "100px",
                     "align": "right",
                     "edit": {
                         "type": "NumberSpinner",
@@ -62,7 +62,7 @@
                 {
                     "caption": "Offset",
                     "name": "Offset",
-                    "width": "75px",
+                    "width": "100px",
                     "add": 1,
                     "align": "right",
                     "edit": {
