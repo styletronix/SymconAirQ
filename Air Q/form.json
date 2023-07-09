@@ -32,7 +32,7 @@
                 {
                     "caption": "Sensor",
                     "name": "Sensor",
-                    "width": "50px",
+                    "width": "auto",
                     "add": "",
                     "edit": {
                         "type": "ValidationTextBox"
@@ -50,7 +50,7 @@
                 {
                     "caption": "Multiplicator",
                     "name": "Multiplicator",
-                    "width": "60px",
+                    "width": "auto",
                     "add": 1,
                     "edit": {
                         "type": "NumberSpinner",
@@ -60,28 +60,8 @@
                 {
                     "caption": "Offset",
                     "name": "Offset",
-                    "width": "60px",
+                    "width": "auto",
                     "add": 1,
-                    "edit": {
-                        "type": "NumberSpinner",
-                        "digits": 3
-                    }
-                },
-                {
-                    "caption": "Upper Limit",
-                    "name": "UpperLimit",
-                    "width": "auto",
-                    "add": 0,
-                    "edit": {
-                        "type": "NumberSpinner",
-                        "digits": 3
-                    }
-                },
-                {
-                    "caption": "Lower Limit",
-                    "name": "LowerLimit",
-                    "width": "auto",
-                    "add": 0,
                     "edit": {
                         "type": "NumberSpinner",
                         "digits": 3
@@ -104,11 +84,11 @@
                                 "add": 60,
                                 "edit": {
                                     "type": "NumberSpinner",
-                                    "suffix": "minutes"
+                                    "suffix": " Min."
                                 }
                             },
                             {
-                                "caption": "is Floating",
+                                "caption": "Is Floating",
                                 "name": "IsFloating",
                                 "width": "auto",
                                 "add": true,
