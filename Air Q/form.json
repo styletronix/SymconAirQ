@@ -32,7 +32,7 @@
                 {
                     "caption": "Sensor",
                     "name": "Sensor",
-                    "width": "auto",
+                    "width": "75px",
                     "add": "",
                     "edit": {
                         "type": "ValidationTextBox"
@@ -43,6 +43,7 @@
                     "name": "FriendlyName",
                     "width": "auto",
                     "add": "",
+
                     "edit": {
                         "type": "ValidationTextBox"
                     }
@@ -50,8 +51,9 @@
                 {
                     "caption": "Multiplicator",
                     "name": "Multiplicator",
-                    "width": "auto",
                     "add": 1,
+                    "width": "75px",
+                    "align": "right",
                     "edit": {
                         "type": "NumberSpinner",
                         "digits": 6
@@ -60,8 +62,9 @@
                 {
                     "caption": "Offset",
                     "name": "Offset",
-                    "width": "auto",
+                    "width": "75px",
                     "add": 1,
+                    "align": "right",
                     "edit": {
                         "type": "NumberSpinner",
                         "digits": 3
@@ -70,7 +73,7 @@
                 {
                     "caption": "Limits",
                     "name": "Limits",
-                    "width": "auto",
+                    "width": "0px",
                     "add": [],
                     "edit": {
                         "type": "List",
@@ -82,6 +85,7 @@
                                 "name": "Timespan",
                                 "width": "auto",
                                 "add": 60,
+                                "align": "right" ,
                                 "edit": {
                                     "type": "NumberSpinner",
                                     "suffix": " Min."
@@ -95,11 +99,13 @@
                                 "edit": {
                                     "type": "CheckBox"
                                 }
-                            },{
+                            },
+                            {
                                 "caption": "Upper Limit",
                                 "name": "UpperLimit",
                                 "width": "auto",
                                 "add": 0,
+                                "align": "right",
                                 "edit": {
                                     "type": "NumberSpinner",
                                     "digits": 3
@@ -110,6 +116,7 @@
                                 "name": "LowerLimit",
                                 "width": "auto",
                                 "add": 0,
+                                "align": "right",
                                 "edit": {
                                     "type": "NumberSpinner",
                                     "digits": 3
@@ -129,18 +136,20 @@
                 }
             ],
             "values": [
-{
-"Sensor": "oxygen",
-"FriendlyName": "Sauerstoff",
-"Multiplicator": 1 ,
-"Offset": 0,
-"Limits": [{
-    "Timespan": 0,
-    "UpperLimit": 0,
-    "LowerLimit": 0,
-    "Severity": 1
-}]
-}
+                {
+                    "Sensor": "oxygen",
+                    "FriendlyName": "Sauerstoff",
+                    "Multiplicator": 1,
+                    "Offset": 0,
+                    "Limits": [
+                        {
+                            "Timespan": 0,
+                            "UpperLimit": 0,
+                            "LowerLimit": 0,
+                            "Severity": 1
+                        }
+                    ]
+                }
             ]
         }
     ],
