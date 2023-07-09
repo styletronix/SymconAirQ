@@ -22,6 +22,12 @@
             "suffix": "seconds"
         },
         {
+            "type": "NumberSpinner",
+            "name": "refreshAverage",
+            "caption": "Refresh interval average calculation",
+            "suffix": "seconds"
+        },
+        {
             "type": "List",
             "name": "Sensors",
             "caption": "Sensors",
@@ -32,7 +38,7 @@
                 {
                     "caption": "Sensor",
                     "name": "Sensor",
-                    "width": "75px",
+                    "width": "90px",
                     "add": "",
                     "edit": {
                         "type": "ValidationTextBox"
@@ -41,7 +47,7 @@
                 {
                     "caption": "FriendlyName",
                     "name": "FriendlyName",
-                    "width": "auto",
+                    "width": "250px",
                     "add": "",
 
                     "edit": {
@@ -52,7 +58,7 @@
                     "caption": "Multiplicator",
                     "name": "Multiplicator",
                     "add": 1,
-                    "width": "75px",
+                    "width": "100px",
                     "align": "right",
                     "edit": {
                         "type": "NumberSpinner",
@@ -62,7 +68,7 @@
                 {
                     "caption": "Offset",
                     "name": "Offset",
-                    "width": "75px",
+                    "width": "100px",
                     "add": 1,
                     "align": "right",
                     "edit": {
@@ -75,17 +81,27 @@
                     "name": "Limits",
                     "width": "0px",
                     "add": [],
+                    "onAdd": "SXAIRQ_NewID($id, $Sensors);",
                     "edit": {
                         "type": "List",
                         "add": true,
                         "delete": true,
                         "columns": [
                             {
+                                "caption": "Caption",
+                                "name": "Caption",
+                                "width": "auto",
+                                "add": "",
+                                "edit": {
+                                    "type": "ValidationTextBox"
+                                }
+                            },
+                            {
                                 "caption": "Timespan",
                                 "name": "Timespan",
-                                "width": "auto",
-                                "add": 60,
-                                "align": "right" ,
+                                "add": 0,
+                                "align": "right",
+                                "width": "80px",
                                 "edit": {
                                     "type": "NumberSpinner",
                                     "suffix": " Min."
@@ -94,16 +110,27 @@
                             {
                                 "caption": "Is Floating",
                                 "name": "IsFloating",
-                                "width": "auto",
+                                "width": "80px",
                                 "add": true,
                                 "edit": {
                                     "type": "CheckBox"
                                 }
                             },
                             {
+                                "caption": "Timespan Offset",
+                                "name": "TimespanOffset",
+                                "add": 0,
+                                "align": "right",
+                                "width": "80px",
+                                "edit": {
+                                    "type": "NumberSpinner",
+                                    "suffix": " Min."
+                                }
+                            },
+                            {
                                 "caption": "Upper Limit",
                                 "name": "UpperLimit",
-                                "width": "auto",
+                                "width": "80px",
                                 "add": 0,
                                 "align": "right",
                                 "edit": {
@@ -114,7 +141,7 @@
                             {
                                 "caption": "Lower Limit",
                                 "name": "LowerLimit",
-                                "width": "auto",
+                                "width": "90px",
                                 "add": 0,
                                 "align": "right",
                                 "edit": {
@@ -125,7 +152,7 @@
                             {
                                 "caption": "Severity",
                                 "name": "Severity",
-                                "width": "auto",
+                                "width": "90px",
                                 "add": 1,
                                 "edit": {
                                     "type": "NumberSpinner"
