@@ -15,7 +15,8 @@
             "Test connection": "Verbindung prüfen",
             "Status": "Status",
             "Measure Time": "Zeitpunkt der Messung",
-            "DeviceID": "Geräte ID"
+            "DeviceID": "Geräte ID",
+            "Oxygen (O2)": "Sauerstoff (O2)"
         }
     }
 }

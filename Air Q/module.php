@@ -52,67 +52,57 @@ class AirQ extends IPSModule
 	{
 		parent::Destroy();
 	}
-	public function CreateUnknownVariables()
-	{
-		$pw = $this->ReadPropertyString('password');
-		$url = trim($this->ReadPropertyString('url'), '\\') . '/data';
-		$json = $this->getDataFromUrl($url);
-		$this->SendDebug("getDataFromUrl", $json, 0);
-
-		$data = json_decode($json, true);
-		$this->SendDebug("json_decode", $data['content'], 0);
-
-		$data = $this->decryptString($data['content'], $pw);
-		$this->SendDebug("decryptString", $data, 0);
-		$data = json_decode($data, true);
-
-
-		foreach ($data as $key => $value) {
-			$valID = @$this->GetIDForIdent($key);
-			if (!$valID) {
-				switch ($key) {
-					case 'DeviceID':
-					case 'Status':
-						$valID = IPS_CreateVariable(3);
-						break;
+	// public function CreateUnknownVariables()
+	// {
+	// 	$data = $this->GetDataDecoded();
+	// 	if ($data) {
+	// 		foreach ($data as $key => $value) {
+	// 			$valID = @$this->GetIDForIdent($key);
+	// 			if (!$valID) {
+	// 				switch ($key) {
+	// 					case 'DeviceID':
+	// 					case 'Status':
+	// 						$valID = IPS_CreateVariable(3);
+	// 						break;
 
 
-					case 'TypPS':
-						$valID = IPS_CreateVariable(1);
-						break;
+	// 					case 'TypPS':
+	// 						$valID = IPS_CreateVariable(1);
+	// 						break;
 
-					case 'uptime':
-						$valID = IPS_CreateVariable(1);
-					//IPS_SetVariableCustomProfile($valID, ???);
+	// 					case 'uptime':
+	// 						$valID = IPS_CreateVariable(1);
+	// 					//IPS_SetVariableCustomProfile($valID, ???);
 
-					case 'timestamp':
-					case 'measuretime':
-						$valID = IPS_CreateVariable(1);
-						IPS_SetVariableCustomProfile($valID, "~UnixTimestamp");
-						break;
+	// 					case 'timestamp':
+	// 					case 'measuretime':
+	// 						$valID = IPS_CreateVariable(1);
+	// 						IPS_SetVariableCustomProfile($valID, "~UnixTimestamp");
+	// 						break;
 
-					default:
-						$valID = IPS_CreateVariable(2);
-				}
-				IPS_SetParent($valID, $this->InstanceID);
-				IPS_SetIdent($valID, $key);
-				IPS_SetName($valID, $key);
-			}
+	// 					default:
+	// 						$valID = IPS_CreateVariable(2);
+	// 				}
+	// 				IPS_SetParent($valID, $this->InstanceID);
+	// 				IPS_SetIdent($valID, $key);
+	// 				IPS_SetName($valID, $key);
+	// 			}
 
-			if (is_array($value)) {
-				for ($i = 1; $i < count($value); $i++) {
-					$indent = 'value_' . $i;
-					$val2ID = @IPS_GetObjectIDByIdent($indent, $valID);
-					if (!$val2ID) {
-						$val2ID = IPS_CreateVariable(3);
-						IPS_SetParent($val2ID, $valID);
-						IPS_SetIdent($val2ID, $indent);
-						IPS_SetName($val2ID, $key . ' (' . $i . ')');
-					}
-				}
-			}
-		}
-	}
+	// 			if (is_array($value)) {
+	// 				for ($i = 1; $i < count($value); $i++) {
+	// 					$indent = 'value_' . $i;
+	// 					$val2ID = @IPS_GetObjectIDByIdent($indent, $valID);
+	// 					if (!$val2ID) {
+	// 						$val2ID = IPS_CreateVariable(3);
+	// 						IPS_SetParent($val2ID, $valID);
+	// 						IPS_SetIdent($val2ID, $indent);
+	// 						IPS_SetName($val2ID, $key . ' (' . $i . ')');
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 
 	public function TestConnection()
 	{

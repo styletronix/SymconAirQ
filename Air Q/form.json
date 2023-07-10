@@ -165,31 +165,24 @@
             "values": [
                 {
                     "Sensor": "oxygen",
-                    "FriendlyName": "Sauerstoff",
+                    "FriendlyName": "Oxygen (O2)",
                     "Multiplicator": 1,
                     "Offset": 0,
                     "Limits": [
                         {
                             "Timespan": 0,
-                            "UpperLimit": 0,
-                            "LowerLimit": 0,
-                            "Severity": 1
+                            "UpperLimit": 22.0,
+                            "LowerLimit": 19.0,
+                            "Severity": 2
                         }
                     ]
                 },
                 {
                     "Sensor": "timespan",
-                    "FriendlyName": "Messzeit",
+                    "FriendlyName": "Measure Time",
                     "Multiplicator": 0.001,
                     "Offset": 0,
-                    "Limits": [
-                        {
-                            "Timespan": 0,
-                            "UpperLimit": 0,
-                            "LowerLimit": 0,
-                            "Severity": 1
-                        }
-                    ]
+                    "Limits": []
                 }
             ]
         }
