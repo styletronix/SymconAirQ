@@ -307,10 +307,12 @@ class AirQ extends IPSModule
 
 			$indentSensorValue = $sensor['Sensor'];
 			if (array_key_exists($indentSensorValue, $data)) {
-				var_dump($data[$indentSensorValue]);
-				var_dump($sensor['Offset']);
-				var_dump($sensor['Multiplicator']);
-				$currentValue = ($data[$indentSensorValue] + ($sensor['Offset'] ?? 0.0)) * ($sensor['Multiplicator'] ?? 1.0);
+				if (is_array($data)){
+					$value = $data[0];
+				}else{
+					$value = $data;
+				}
+				$currentValue = ($value + ($sensor['Offset'] ?? 0.0)) * ($sensor['Multiplicator'] ?? 1.0);
 				$SensorValueID = $this->RegisterVariableFloat($indentSensorValue, $sensor['FriendlyName']);
 				SetValue($SensorValueID, $currentValue);
 			}
@@ -338,9 +340,9 @@ class AirQ extends IPSModule
 					}
 
 					$t = time();
-					$rolingAverage = $this->GetAggregatedFloatingValue($variableID, $t - ($limit['Timespan'] * 60), $t);
-					if ($rolingAverage) {
-						$value = $rolingAverage['Avg'];
+					$rollingAverage = $this->GetAggregatedFloatingValue($SensorValueID, $t - ($limit['Timespan'] * 60), $t);
+					if ($rollingAverage) {
+						$value = $rollingAverage['Avg'];
 						SetValue($variableID, $value);
 
 						if (
