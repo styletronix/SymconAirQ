@@ -236,7 +236,8 @@ class AirQ extends IPSModule
 	// 	}
 	// }
 
-	public function GetDataDecoded(){
+	public function GetDataDecoded()
+	{
 		$pw = $this->ReadPropertyString('password');
 		$url = trim($this->ReadPropertyString('url'), '\\') . '/data';
 
@@ -283,7 +284,7 @@ class AirQ extends IPSModule
 	public function Update($includeAggregated = false)
 	{
 		$data = $this->GetDataDecoded();
-		if ($data){
+		if ($data) {
 			$this->WriteValues($data, $includeAggregated);
 
 			$this->SetStatus(102);
@@ -309,7 +310,7 @@ class AirQ extends IPSModule
 				SetValue($SensorValueID, $currentValue);
 			}
 
-			foreach  ($sensor['Limits'] as $limit) {
+			foreach ($sensor['Limits'] as $limit) {
 				if ($limit['Timespan'] == 0) {
 					$variableID = $SensorValueID;
 
@@ -323,31 +324,28 @@ class AirQ extends IPSModule
 					}
 
 				} elseif ($includeAggregated) {
-					 $indentValue = $sensor['Sensor'] . '_' . $limit['Timespan'];
-					 $indentStatus = $sensor['Sensor'] . '_' . $limit['Timespan'] . '_status';
-					 $variableID = $this->RegisterVariableFloat( $indentValue, $sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ')');
-					
-					 if (!array_key_exists($indentStatus, $newSeverity)) {
+					$indentValue = $sensor['Sensor'] . '_' . $limit['Timespan'];
+					$indentStatus = $sensor['Sensor'] . '_' . $limit['Timespan'] . '_status';
+					$variableID = $this->RegisterVariableFloat($indentValue, $sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ')');
+
+					if (!array_key_exists($indentStatus, $newSeverity)) {
 						$newSeverity[$indentStatus] = 0;
 					}
 
-					 $t = time();
+					$t = time();
 					$rolingAverage = $this->GetAggregatedFloatingValue($variableID, $t - ($limit['Timespan'] * 60), $t);
-					 
+					if ($rolingAverage) {
+						$value = $rolingAverage['Avg'];
+						SetValue($variableID, $value);
 
-					$value = $rolingAverage['Avg'];
-					if ($value){
-						SetValue($variableID, $value['Avg']);
-
-					
-					if (
-					($limit['UpperLimit'] != 0 && $value > $limit['UpperLimit']) ||
-					($limit['LowerLimit'] != 0 && $value < $limit['LowerLimit'])
-					 ) {
-					 	if (!$newSeverity[$indentStatus] >= $limit['Severity']) {
-					 		$newSeverity[$indentStatus] = $limit['Severity'];
-					 	}
-					}
+						if (
+							($limit['UpperLimit'] != 0 && $value > $limit['UpperLimit']) ||
+							($limit['LowerLimit'] != 0 && $value < $limit['LowerLimit'])
+						) {
+							if (!$newSeverity[$indentStatus] >= $limit['Severity']) {
+								$newSeverity[$indentStatus] = $limit['Severity'];
+							}
+						}
 					}
 				}
 			}
@@ -371,8 +369,9 @@ class AirQ extends IPSModule
 		return $data;
 	}
 
-	private function GetAggregatedFloatingValue( $varId, $start, $end, $archiveControlID = null){
-		if (!$archiveControlID){
+	private function GetAggregatedFloatingValue($varId, $start, $end, $archiveControlID = null)
+	{
+		if (!$archiveControlID) {
 			$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 		}
 
@@ -392,7 +391,9 @@ class AirQ extends IPSModule
 		if ($diffToFit > 0) {
 			print('DIFF ' . $diffToFit . "\n");
 			$werte = AC_GetAggregatedValues($archiveControlID, $varId, 6, $end - $diffToFit, $end - 1, 0);
-			$avgs = array_merge($avgs, $werte);
+			if ($werte) {
+				$avgs = array_merge($avgs, $werte);
+			}
 			$end = $fullHr;
 			$diff = $end - $start;
 		}
@@ -412,7 +413,9 @@ class AirQ extends IPSModule
 				print('DIFF ' . $diffToFit . "\n");
 
 				$werte = AC_GetAggregatedValues($archiveControlID, $varId, 0, $end - $diffToFit, $end - 1, 0);
-				$avgs = array_merge($avgs, $werte);
+				if ($werte) {
+					$avgs = array_merge($avgs, $werte);
+				}
 				$diff = $diff - $diffToFit;
 			}
 			$end = $start + $diff;
@@ -440,7 +443,9 @@ class AirQ extends IPSModule
 
 			$end = $start + $diff;
 			$werte = AC_GetAggregatedValues($archiveControlID, $varId, $level, $end - $diffToFit, $end - 1, 0);
-			$avgs = array_merge($avgs, $werte);
+			if ($werte) {
+				$avgs = array_merge($avgs, $werte);
+			}
 
 			$diff = $diff - $diffToFit;
 		}
@@ -452,7 +457,7 @@ class AirQ extends IPSModule
 
 		foreach ($avgs as $avg) {
 			$avgSum = $avgSum + ($avg['Avg'] * $avg['Duration'] / 60);
-			$avgCount = $avgCount + ($avg['Duration'] / 60);
+			$avgCount = $avgCount + (max($avg['Duration'], 1) / 60);
 			if ($avg['Max'] > $max) {
 				$max = $avg['Max'];
 			}
@@ -463,11 +468,11 @@ class AirQ extends IPSModule
 
 		return [
 			"Duration" => $avgCount * 60,
-			"Avg" => $avgSum / max($avgCount,1),
+			"Avg" => $avgSum / max($avgCount, 1),
 			"Max" => $max,
 			"Min" => $min,
-			"DurationDifference" => ($avgCount * 60) - ($endtime - $start) ,
-			"Avgs"  => $avgs
+			"DurationDifference" => ($avgCount * 60) - ($endtime - $start),
+			"Avgs" => $avgs
 		];
 	}
 
