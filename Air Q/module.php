@@ -292,11 +292,11 @@ class AirQ extends IPSModule
 
 	public function WriteValues($data, $includeAggregated = false)
 	{
-		$sensorlist = json_decode($this->ReadPropertyString("Sensors"));
+		$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
 		$newSeverity = [];
 
 		foreach ($sensorlist as $sensor) {
-			$indentSensorStatus = $sensor->Sensor . '_status';
+			$indentSensorStatus = $sensor->['Sensor'] . '_status';
 			$SensorStatusID = $this->RegisterVariableInteger($indentSensorStatus, $sensor['FriendlyName'] . ' - ' . $this->Translate('Status'));
 
 			if (!array_key_exists($indentSensorStatus, $newSeverity)) {
