@@ -295,8 +295,7 @@ class AirQ extends IPSModule
 		$sensorlist = json_decode($this->ReadPropertyString("Sensors"));
 		$newSeverity = [];
 
-		for ($x = 0; $x < count($sensorlist); $x++) {
-			$sensor = $sensorlist[$x];
+		foreach ($sensorlist as $sensor) {
 			$indentSensorStatus = $sensor['Sensor'] . '_status';
 			$SensorStatusID = $this->RegisterVariableInteger($indentSensorStatus, $sensor['FriendlyName'] . ' - ' . $this->Translate('Status'));
 
@@ -310,12 +309,9 @@ class AirQ extends IPSModule
 				SetValue($SensorValueID, $currentValue);
 			}
 
-			for ($y = 0; $y < count($sensor['Limits']); $y++) {
-				$limit = $sensor['Limits'][$y];
-				
+			foreach  ($sensor['Limits'] as $limit) {
 				if ($limit['Timespan'] == 0) {
 					$variableID = $SensorValueID;
-					$statusID = $SensorStatusID;
 
 					if (
 						($limit['UpperLimit'] != 0 && $currentValue > $limit['UpperLimit']) ||
