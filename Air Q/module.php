@@ -333,6 +333,7 @@ class AirQ extends IPSModule
 					$indentValue = $sensor['Sensor'] . '_' . $limit['Timespan'];
 					$indentStatus = $sensor['Sensor'] . '_' . $limit['Timespan'] . '_status';
 					$variableID = $this->RegisterVariableFloat($indentValue, $sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ')');
+					$statusVariableID = $this->RegisterVariableFloat($indentStatus, $sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ') - Status');
 
 					if (!array_key_exists($indentStatus, $newSeverity)) {
 						$newSeverity[$indentStatus] = 0;
@@ -348,8 +349,8 @@ class AirQ extends IPSModule
 							($limit['UpperLimit'] != 0 && $value > $limit['UpperLimit']) ||
 							($limit['LowerLimit'] != 0 && $value < $limit['LowerLimit'])
 						) {
-							if (!$newSeverity[$indentStatus] >= $limit['Severity']) {
-								$newSeverity[$indentStatus] = $limit['Severity'];
+							if (!$newSeverity[$variableID] >= $limit['Severity']) {
+								$newSeverity[$variableID] = $limit['Severity'];
 							}
 						}
 					}
