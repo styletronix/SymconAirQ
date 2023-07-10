@@ -283,7 +283,7 @@ class AirQ extends IPSModule
 	}
 	public function Update($includeAggregated = false)
 	{
-		$data = $this->GetDataDecoded;
+		$data = $this->GetDataDecoded();
 		if ($data){
 			$this->WriteValues($data, $includeAggregated);
 
