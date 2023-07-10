@@ -294,7 +294,6 @@ class AirQ extends IPSModule
 	public function WriteValues($data, $includeAggregated = false)
 	{
 		$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
-		print_r($sensorlist);
 		$newSeverity = [];
 
 		foreach ($sensorlist as $sensor) {
@@ -307,10 +306,10 @@ class AirQ extends IPSModule
 
 			$indentSensorValue = $sensor['Sensor'];
 			if (array_key_exists($indentSensorValue, $data)) {
-				if (is_array($data)){
-					$value = $data[0];
+				if (is_array($data[$indentSensorValue])){
+					$value = $data[$indentSensorValue][0];
 				}else{
-					$value = $data;
+					$value = $data[$indentSensorValue];
 				}
 				$currentValue = ($value + ($sensor['Offset'] ?? 0.0)) * ($sensor['Multiplicator'] ?? 1.0);
 				$SensorValueID = $this->RegisterVariableFloat($indentSensorValue, $sensor['FriendlyName']);
@@ -359,7 +358,7 @@ class AirQ extends IPSModule
 		}
 
 		foreach ($newSeverity as $key => $val) {
-			SetValue($$this->GetIDForIdent($key), $val);
+			SetValue($this->GetIDForIdent($key), $val);
 		}
 	}
 
