@@ -12,7 +12,10 @@
             "Error in received data": "Fehlerhafte Daten empfangen",
             "Error while decrypting. Maybe wrong Password?": "Fehler beim entschlüsseln der Daten. Möglicherweise falsches passwort?",
             "URL or password missing.": "URL oder Kennwort fehlt.",
-            "Test connection": "Verbindung prüfen"
+            "Test connection": "Verbindung prüfen",
+            "Status": "Status",
+            "Measure Time": "Zeitpunkt der Messung",
+            "DeviceID": "Geräte ID"
         }
     }
 }
