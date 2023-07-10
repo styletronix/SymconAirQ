@@ -336,8 +336,10 @@ class AirQ extends IPSModule
 					 
 
 					$value = $rolingAverage['Avg'];
-					SetValue($variableID, $value);
+					if ($value){
+						SetValue($variableID, $value['Avg']);
 
+					
 					if (
 					($limit['UpperLimit'] != 0 && $value > $limit['UpperLimit']) ||
 					($limit['LowerLimit'] != 0 && $value < $limit['LowerLimit'])
@@ -345,6 +347,7 @@ class AirQ extends IPSModule
 					 	if (!$newSeverity[$indentStatus] >= $limit['Severity']) {
 					 		$newSeverity[$indentStatus] = $limit['Severity'];
 					 	}
+					}
 					}
 				}
 			}
@@ -460,7 +463,7 @@ class AirQ extends IPSModule
 
 		return [
 			"Duration" => $avgCount * 60,
-			"Avg" => $avgSum / $avgCount,
+			"Avg" => $avgSum / max($avgCount,1),
 			"Max" => $max,
 			"Min" => $min,
 			"DurationDifference" => ($avgCount * 60) - ($endtime - $start) ,
