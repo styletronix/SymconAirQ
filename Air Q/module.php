@@ -294,6 +294,7 @@ class AirQ extends IPSModule
 	public function WriteValues($data, $includeAggregated = false)
 	{
 		$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
+		print_r($sensorlist)
 		$newSeverity = [];
 
 		foreach ($sensorlist as $sensor) {
