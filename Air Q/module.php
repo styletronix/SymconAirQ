@@ -306,7 +306,10 @@ class AirQ extends IPSModule
 
 			$indentSensorValue = $sensor['Sensor'];
 			if (array_key_exists($indentSensorValue, $data)) {
-				$currentValue = ($data[$indentSensorValue] + ($sensor['Offset'] ?? 0)) * ($sensor['Multiplicator'] ?? 1);
+				var_dump($data[$indentSensorValue]);
+				var_dump($sensor['Offset']);
+				var_dump($sensor['Multiplicator']);
+				$currentValue = ($data[$indentSensorValue] + ($sensor['Offset'] ?? 0.0)) * ($sensor['Multiplicator'] ?? 1.0);
 				$SensorValueID = $this->RegisterVariableFloat($indentSensorValue, $sensor['FriendlyName']);
 				SetValue($SensorValueID, $currentValue);
 			}
