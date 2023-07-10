@@ -197,7 +197,6 @@ class AirQ extends IPSModule
 		$this->SetTimerInterval('update', ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0));
 		$this->SetTimerInterval('updateAverage', ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refreshAverage') * 1000 : 0));
 
-		$this->AddOrUpdateVariables();
 		$this->Update(true);
 	}
 	// private function parseData($data)
