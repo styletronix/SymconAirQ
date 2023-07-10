@@ -396,7 +396,6 @@ class AirQ extends IPSModule
 		$diffToFit = floor($diffToFit / 60) * 60;
 
 		if ($diffToFit > 0) {
-			print('DIFF ' . $diffToFit . "\n");
 			$werte = @AC_GetAggregatedValues($archiveControlID, $varId, 6, $end - $diffToFit, $end - 1, 0);
 			if ($werte) {
 				$avgs = array_merge($avgs, $werte);
@@ -417,8 +416,6 @@ class AirQ extends IPSModule
 			$diffToFit = floor($diffToFit / 3600) * 3600;
 
 			if ($diffToFit >= 3600) {
-				print('DIFF ' . $diffToFit . "\n");
-
 				$werte = @AC_GetAggregatedValues($archiveControlID, $varId, 0, $end - $diffToFit, $end - 1, 0);
 				if ($werte) {
 					$avgs = array_merge($avgs, $werte);
