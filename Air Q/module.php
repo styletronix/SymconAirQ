@@ -306,7 +306,7 @@ class AirQ extends IPSModule
 
 			$indentSensorValue = $sensor['Sensor'];
 			if (array_key_exists($indentSensorValue, $data)) {
-				$currentValue = ($data[$indentSensorValue] + $sensor['Offset']) * $sensor['Multiplicator'];
+				$currentValue = ($data[$indentSensorValue] + ($sensor['Offset'] ?? 0)) * ($sensor['Multiplicator'] ?? 1);
 				$SensorValueID = $this->RegisterVariableFloat($indentSensorValue, $sensor['FriendlyName']);
 				SetValue($SensorValueID, $currentValue);
 			}
@@ -391,7 +391,7 @@ class AirQ extends IPSModule
 
 		if ($diffToFit > 0) {
 			print('DIFF ' . $diffToFit . "\n");
-			$werte = AC_GetAggregatedValues($archiveControlID, $varId, 6, $end - $diffToFit, $end - 1, 0);
+			$werte = @AC_GetAggregatedValues($archiveControlID, $varId, 6, $end - $diffToFit, $end - 1, 0);
 			if ($werte) {
 				$avgs = array_merge($avgs, $werte);
 			}
@@ -413,7 +413,7 @@ class AirQ extends IPSModule
 			if ($diffToFit >= 3600) {
 				print('DIFF ' . $diffToFit . "\n");
 
-				$werte = AC_GetAggregatedValues($archiveControlID, $varId, 0, $end - $diffToFit, $end - 1, 0);
+				$werte = @AC_GetAggregatedValues($archiveControlID, $varId, 0, $end - $diffToFit, $end - 1, 0);
 				if ($werte) {
 					$avgs = array_merge($avgs, $werte);
 				}
@@ -443,7 +443,7 @@ class AirQ extends IPSModule
 			}
 
 			$end = $start + $diff;
-			$werte = AC_GetAggregatedValues($archiveControlID, $varId, $level, $end - $diffToFit, $end - 1, 0);
+			$werte = @AC_GetAggregatedValues($archiveControlID, $varId, $level, $end - $diffToFit, $end - 1, 0);
 			if ($werte) {
 				$avgs = array_merge($avgs, $werte);
 			}
