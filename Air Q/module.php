@@ -456,13 +456,10 @@ class AirQ extends IPSModule
 	/**
 	 * Returns the first Monday after a given date or date if it already is a monday.
 	 */
-	private function getStartOfWeekDate($date)
+	private function getStartOfWeekDate($timestamp)
 	{
-		if ($date instanceof \DateTime) {
-			$date = clone $date;
-		} else {
-			$date = new \DateTime($date);
-		}
+		$date = new \DateTime();
+		$date->setTimestamp($timestamp);
 
 		$date->setTime(0, 0, 0);
 
