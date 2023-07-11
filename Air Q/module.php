@@ -459,7 +459,7 @@ class AirQ extends IPSModule
 	private function getStartOfWeekDate($timestamp)
 	{
 		$date = new \DateTime();
-		$date->setTimestamp($timestamp);
+		$date->setTimestamp((int) $timestamp);
 
 		$date->setTime(0, 0, 0);
 
