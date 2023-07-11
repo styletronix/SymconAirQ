@@ -22,6 +22,10 @@
             "suffix": "seconds"
         },
         {
+            "type": "Label",
+            "caption": "Average calculation is resource consuming even with the internal use of precalculated averages. So don't set this value too low if you have many averages to calculate."
+        },
+        {
             "type": "NumberSpinner",
             "name": "refreshAverage",
             "caption": "Refresh interval average calculation",
@@ -119,7 +123,7 @@
                                 }
                             },
                             {
-                                "caption": "Timespan",
+                                "caption": "Timespan for Rolling Average",
                                 "name": "Timespan",
                                 "add": 0,
                                 "align": "right",
@@ -129,18 +133,6 @@
                                     "suffix": " Min."
                                 }
                             },
-                            {
-                                "caption": "Timespan Offset for rolling average",
-                                "name": "TimespanOffset",
-                                "add": 0,
-                                "align": "right",
-                                "width": "0px",
-                                "edit": {
-                                    "type": "NumberSpinner",
-                                    "suffix": " Minutes."
-                                }
-                            },
-                            
                             {
                                 "caption": "Upper Limit",
                                 "name": "UpperLimit",
@@ -169,7 +161,26 @@
                                 "width": "0px",
                                 "add": 1,
                                 "edit": {
-                                    "type": "NumberSpinner"
+                                    "type": "Select",
+                                    "caption": "Severity",
+                                    "options": [
+                                        {
+                                            "caption": "OK",
+                                            "value": 0
+                                        },
+                                        {
+                                            "caption": "Information",
+                                            "value": 1
+                                        },
+                                        {
+                                            "caption": "Warning",
+                                            "value": 2
+                                        },
+                                        {
+                                            "caption": "Danger",
+                                            "value": 3
+                                        }
+                                    ]
                                 }
                             }
                         ]

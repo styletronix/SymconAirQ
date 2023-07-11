@@ -55,7 +55,7 @@ class AirQ extends IPSModule
 		$this->RegisterVariableString('Status', $this->Translate('Status'));
 		$this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
 		$this->RegisterVariableInteger('measuretime', $this->Translate('Measuretime'), '');
-		
+
 
 		$this->RegisterTimer("update", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "update");');
 		$this->RegisterTimer("updateAverage", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refreshAverage') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "updateAverage");');
@@ -65,57 +65,6 @@ class AirQ extends IPSModule
 	{
 		parent::Destroy();
 	}
-	// public function CreateUnknownVariables()
-	// {
-	// 	$data = $this->GetDataDecoded();
-	// 	if ($data) {
-	// 		foreach ($data as $key => $value) {
-	// 			$valID = @$this->GetIDForIdent($key);
-	// 			if (!$valID) {
-	// 				switch ($key) {
-	// 					case 'DeviceID':
-	// 					case 'Status':
-	// 						$valID = IPS_CreateVariable(3);
-	// 						break;
-
-
-	// 					case 'TypPS':
-	// 						$valID = IPS_CreateVariable(1);
-	// 						break;
-
-	// 					case 'uptime':
-	// 						$valID = IPS_CreateVariable(1);
-	// 					//IPS_SetVariableCustomProfile($valID, ???);
-
-	// 					case 'timestamp':
-	// 					case 'measuretime':
-	// 						$valID = IPS_CreateVariable(1);
-	// 						IPS_SetVariableCustomProfile($valID, "~UnixTimestamp");
-	// 						break;
-
-	// 					default:
-	// 						$valID = IPS_CreateVariable(2);
-	// 				}
-	// 				IPS_SetParent($valID, $this->InstanceID);
-	// 				IPS_SetIdent($valID, $key);
-	// 				IPS_SetName($valID, $key);
-	// 			}
-
-	// 			if (is_array($value)) {
-	// 				for ($i = 1; $i < count($value); $i++) {
-	// 					$indent = 'value_' . $i;
-	// 					$val2ID = @IPS_GetObjectIDByIdent($indent, $valID);
-	// 					if (!$val2ID) {
-	// 						$val2ID = IPS_CreateVariable(3);
-	// 						IPS_SetParent($val2ID, $valID);
-	// 						IPS_SetIdent($val2ID, $indent);
-	// 						IPS_SetName($val2ID, $key . ' (' . $i . ')');
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
 
 	public function TestConnection()
 	{
@@ -168,32 +117,6 @@ class AirQ extends IPSModule
 		echo $this->Translate("Failed. See Debug window for details.");
 		return false;
 	}
-
-	public function NewID($Sensors)
-	{
-		$values = [];
-		foreach ($Sensors as $target) {
-			if ($target['ID'] == 0) {
-				$target['ID'] = $this->generateIdentifier();
-			}
-			foreach ($target['Limits'] as $limit) {
-				if ($limit['ID'] == 0) {
-					$limit['ID'] = $this->generateIdentifier();
-				}
-			}
-			$values[] = $target;
-		}
-		$this->UpdateFormField('Sensors', 'values', json_encode($values));
-	}
-
-	public function generateIdentifier()
-	{
-		$newID = $this->ReadAttributeInteger('NewID');
-		$this->WriteAttributeInteger('NewID', $newID + 1);
-		return $newID;
-		// return sprintf('{%04X%04X-%04X-%04X-%04X-%04X%04X%04X}', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
-	}
-
 	public function ApplyChanges()
 	{
 		parent::ApplyChanges();
@@ -330,6 +253,8 @@ class AirQ extends IPSModule
 				continue;
 			}
 			$statusCreated = false;
+			$newSensorSeverity = 0;
+
 			$indentSensorStatus = $sensor['Sensor'] . '_status';
 			$indentSensorValue = $sensor['Sensor'];
 			if (array_key_exists($indentSensorValue, $data)) {
@@ -356,12 +281,12 @@ class AirQ extends IPSModule
 
 			foreach ($sensor['Limits'] as $limit) {
 				if (!$statusCreated && ($limit['UpperLimit'] != 0 || $limit['LowerLimit'] != 0)) {
-
-					$this->RegisterVariableInteger($indentSensorStatus, $sensor['FriendlyName'] . ' - ' . $this->Translate('Status'));
-
-					if (!array_key_exists($indentSensorStatus, $newSeverity)) {
-						$newSeverity[$indentSensorStatus] = 0;
-					}
+					$this->RegisterVariableInteger(
+						$indentSensorStatus,
+						$sensor['FriendlyName'] . ' - ' . $this->Translate('Status'),
+						'SXAIRQ.Status'
+					);
+					$this->levelUp($newSeverity, $indentSensorStatus);
 					$statusCreated = true;
 				}
 
@@ -377,7 +302,7 @@ class AirQ extends IPSModule
 						}
 					}
 
-				} elseif ($includeAggregated) {
+				} else {
 					$indentValue = $sensor['Sensor'] . '_' . $limit['Timespan'];
 					$indentStatus = $sensor['Sensor'] . '_' . $limit['Timespan'] . '_status';
 					$variableID = $this->RegisterVariableFloat(
@@ -391,35 +316,53 @@ class AirQ extends IPSModule
 						$sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ') - Status',
 						'SXAIRQ.Status'
 					);
-
-					if (!array_key_exists($indentStatus, $newSeverity)) {
-						$newSeverity[$indentStatus] = 0;
-					}
+					$this->levelUp($newSeverity, $indentStatus);
 
 					$t = time();
-					$rollingAverage = $this->GetAggregatedRollingAverage($SensorValueID, $t - ($limit['Timespan'] * 60), $t);
+					if ($includeAggregated){
+						$rollingAverage = @$this->GetAggregatedRollingAverage($SensorValueID, $t - ($limit['Timespan'] * 60), $t);
+					}else{
+						// Use existing value if aggregation is not selected
+						$rollingAverage= [
+							'Avg' => GetValue($variableID)
+						];
+					}
+					
 					if ($rollingAverage) {
 						$value = $rollingAverage['Avg'];
-						SetValue($variableID, $value);
-
+						if ($includeAggregated){
+							SetValue($variableID, $value);
+						}
+						
 						if (
 							($limit['UpperLimit'] != 0 && $value > $limit['UpperLimit']) ||
 							($limit['LowerLimit'] != 0 && $value < $limit['LowerLimit'])
 						) {
-							if (!$newSeverity[$indentStatus] >= $limit['Severity']) {
-								$newSeverity[$indentStatus] = $limit['Severity'];
-							}
+							$this->levelUp($newSeverity, $indentStatus, $limit['Severity']);
+							$this->levelUp($newSeverity, $indentSensorStatus, $limit['Severity']);
 						}
 					}
 				}
 			}
 		}
 
+		//Transfer final Status ti Variables
 		foreach ($newSeverity as $key => $val) {
 			$statusID = @$this->GetIDForIdent($key);
 			if ($statusID) {
 				SetValue($statusID, $val);
 			}
+		}
+	}
+	private function levelUp(&$arr, $indent, $level = null)
+	{
+		if (!array_key_exists($indent, $arr) || $level === null) {
+			if ($level === null) {
+				$level = 0;
+			}
+			$arr[$indent] = $level;
+		} elseif (!$arr[$indent] >= $level) {
+			$arr[$indent] = $level;
 		}
 	}
 	private $StatusVars = ['timestamp', 'Status', 'uptime', 'DeviceID', 'measuretime'];
@@ -616,7 +559,7 @@ class AirQ extends IPSModule
 							break;
 						}
 					}
-					if (!$found){
+					if (!$found) {
 						$sensorlist[] = [
 							"Sensor" => $key,
 							"FriendlyName" => $key,
@@ -630,7 +573,9 @@ class AirQ extends IPSModule
 			$this->UpdateFormField('Sensors', 'values', json_encode($sensorlist));
 		}
 	}
-	/** Decrypt from AES256-CEB  */
+	/** 
+	 * Decrypt from AES256-CEB  
+	 */
 	private function decryptString($data, $password)
 	{
 		$password = mb_convert_encoding($password, "UTF-8");

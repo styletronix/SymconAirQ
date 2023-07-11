@@ -26,6 +26,7 @@
             "Warning": "Warnung",
             "Danger": "Gefahr",
             "Uptime": "Laufzeit",
+            "Refresh interval average calculation": "Aktualisierungsinterval für gleitenden Durchschnitt",
             "To use Rolling Averages for Sensor values, the logging of the corresponding variables must be activated.": "Um einen gleitenden Durchschnitt für Variablen zu berechnen, muss für die entsprechende Variable die Archivierung aktiviert sein.",
             "You can use functions to reduce the logging count, but you should persist at least 1 value every 5 minute over the required timespan.": "Diese muss den gesamten Zeitraum der Durchschnittsberechnung abdecken und sollte bei nicht weniger als 1 Wert pro 5 Minuten liegen.",
             "Is Rolling Average": "Ist gleitender Durchschnitt",
@@ -43,7 +44,13 @@
             "Refresh Sensorlist": "Liste mit Sensoren aktualisieren.",
             "Timestamp": "Zeitpunkt",
             "Measuretime": "Messzeit",
-            "Use 'Refresh Sensorlist' to populate the List with Sensors after applying changes or enter Sensornames yourself.": "Benutze 'Liste mit Sensoren aktualisieren.' um die folgende Liste zu füllen nachdem die Änderungen angewendet wurden. Oder geben Sie die Sensoren selbst ein."
+            "Use 'Refresh Sensorlist' to populate the List with Sensors after applying changes or enter Sensornames yourself.": "Benutze 'Liste mit Sensoren aktualisieren.' um die folgende Liste zu füllen nachdem die Änderungen angewendet wurden. Oder geben Sie die Sensoren selbst ein.",
+            "Average calculation is resource consuming even with the internal use of precalculated averages. So don't set this value too low if you have many averages to calculate.": "Durchschnittsberechnung ist Resourcen intensiv. Setze den Wert nicht zu niedrig wenn es viele Werte zu berechnen gibt.",
+            "Limits": "Grenzwerte",
+            "Caption": "Bezeichnung",
+            "Upper Limit": "Oberer Grenzwert",
+            "Lower Limit": "Unterer Grenzwert",
+            "Severity": "Dringlichkeit"
         }
     }
 }
