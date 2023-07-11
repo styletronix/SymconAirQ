@@ -37,10 +37,10 @@ class AirQ extends IPSModule
 		$name = 'SXAIRQ.Status';
 		if (!IPS_VariableProfileExists($name)) {
 			IPS_CreateVariableProfile($name, 1);
-			IPS_SetVariableProfileAssociation($name, 0, $this->Translate('OK'));
-			IPS_SetVariableProfileAssociation($name, 1, $this->Translate('Information'));
-			IPS_SetVariableProfileAssociation($name, 2, $this->Translate('Warning'));
-			IPS_SetVariableProfileAssociation($name, 3, $this->Translate('Danger'));
+			IPS_SetVariableProfileAssociation($name, 0, $this->Translate('OK'),'', 0x00FF00);
+			IPS_SetVariableProfileAssociation($name, 1, $this->Translate('Information'), '', 0x0000DD);
+			IPS_SetVariableProfileAssociation($name, 2, $this->Translate('Warning'), '', 0xFFFF00);
+			IPS_SetVariableProfileAssociation($name, 3, $this->Translate('Danger'), '', 0xFF0000);
 		}
 
 		$this->RegisterPropertyBoolean('active', false);
