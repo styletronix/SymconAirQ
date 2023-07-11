@@ -526,7 +526,7 @@ class AirQ extends IPSModule
 
 		#Get days to previous Monday
 		if ($diff > 86400) {
-			$startOfWeek = getStartOfWeekDate($end);
+			$startOfWeek = $this->getStartOfWeekDate($end);
 			$diffToFit = $end - $startOfWeek;
 			if ($diffToFit > $diff) {
 				$diffToFit = $diff;
