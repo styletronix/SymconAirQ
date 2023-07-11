@@ -20,13 +20,180 @@
             "name": "refresh",
             "caption": "Refresh interval",
             "suffix": "seconds"
+        },
+        {
+            "type": "Label",
+            "caption": "Average calculation is resource consuming even with the internal use of precalculated averages. So don't set this value too low if you have many averages to calculate."
+        },
+        {
+            "type": "NumberSpinner",
+            "name": "refreshAverage",
+            "caption": "Refresh interval average calculation",
+            "suffix": "seconds"
+        },
+        {
+            "type": "Label",
+            "caption": "To use Rolling Averages for Sensor values, the logging of the corresponding variables must be activated."
+        },
+        {
+            "type": "Label",
+            "caption": "You can use functions to reduce the logging count, but you should persist at least 1 value every 5 minute over the required timespan."
+        },
+        {
+            "type": "Label",
+            "caption": "Use 'Refresh Sensorlist' to populate the List with Sensors after applying changes or enter Sensornames yourself."
+        },
+        {
+            "type": "List",
+            "name": "Sensors",
+            "caption": "Sensors",
+            "add": true,
+            "delete": true,
+            "changeOrder": true,
+            "rowCount": 10,
+            "columns": [
+                {
+                    "caption": "Enabled",
+                    "name": "Enabled",
+                    "width": "70px",
+                    "add": true,
+                    "edit": {
+                        "type": "CheckBox"
+                    }
+                },
+                {
+                    "caption": "Sensor",
+                    "name": "Sensor",
+                    "width": "90px",
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "FriendlyName",
+                    "name": "FriendlyName",
+                    "width": "250px",
+                    "add": "",
+                    "edit": {
+                        "type": "ValidationTextBox"
+                    }
+                },
+                {
+                    "caption": "Multiplicator",
+                    "name": "Multiplicator",
+                    "add": 1,
+                    "width": "100px",
+                    "align": "right",
+                    "edit": {
+                        "type": "NumberSpinner",
+                        "digits": 6
+                    }
+                },
+                {
+                    "caption": "Offset",
+                    "name": "Offset",
+                    "width": "100px",
+                    "add": 0,
+                    "align": "right",
+                    "edit": {
+                        "type": "NumberSpinner",
+                        "digits": 3
+                    }
+                },
+                {
+                    "caption": "Limits",
+                    "name": "Limits",
+                    "width": "0px",
+                    "add": [],
+                    "onAdd": "SXAIRQ_NewID($id, $Sensors);",
+                    "rowCount": 6,
+                    "edit": {
+                        "type": "List",
+                        "add": true,
+                        "delete": true,
+                        "columns": [
+                            {
+                                "caption": "Caption",
+                                "name": "Caption",
+                                "width": "auto",
+                                "add": "",
+                                "edit": {
+                                    "type": "ValidationTextBox"
+                                }
+                            },
+                            {
+                                "caption": "Timespan for Rolling Average",
+                                "name": "Timespan",
+                                "add": 0,
+                                "align": "right",
+                                "width": "0px",
+                                "edit": {
+                                    "type": "NumberSpinner",
+                                    "suffix": " Min."
+                                }
+                            },
+                            {
+                                "caption": "Upper Limit",
+                                "name": "UpperLimit",
+                                "width": "0px",
+                                "add": 0,
+                                "align": "right",
+                                "edit": {
+                                    "type": "NumberSpinner",
+                                    "digits": 3
+                                }
+                            },
+                            {
+                                "caption": "Lower Limit",
+                                "name": "LowerLimit",
+                                "width": "0px",
+                                "add": 0,
+                                "align": "right",
+                                "edit": {
+                                    "type": "NumberSpinner",
+                                    "digits": 3
+                                }
+                            },
+                            {
+                                "caption": "Severity",
+                                "name": "Severity",
+                                "width": "0px",
+                                "add": 1,
+                                "edit": {
+                                    "type": "Select",
+                                    "caption": "Severity",
+                                    "options": [
+                                        {
+                                            "caption": "OK",
+                                            "value": 0
+                                        },
+                                        {
+                                            "caption": "Information",
+                                            "value": 1
+                                        },
+                                        {
+                                            "caption": "Warning",
+                                            "value": 2
+                                        },
+                                        {
+                                            "caption": "Danger",
+                                            "value": 3
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
         }
     ],
     "actions": [
         {
             "type": "Button",
-            "caption": "Create all received variables",
-            "onClick": "SXAIRQ_CreateUnknownVariables($id);"
+            "caption": "Refresh Sensorlist",
+            "onClick": "SXAIRQ_UpdateSensorList($id);"
         },
         {
             "type": "Button",

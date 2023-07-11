@@ -13,16 +13,12 @@ Dieses Modul verbindet sich mit einem über HTTP erreichbaren Air-Q und liest de
 
 ### 1. Funktionsumfang
 - Zyklisches auslesen aller Messwerte des Air-Q.
-
-#### In Planung
-- Bildung von Mittelwerten für verschiedene Zeiträume wie für Auswertung der Warnschwellen nach WHO oder EU Richtlinien notwendig.
-
-*
+- Bildung von gleitenden Mittelwerten für verschiedene Zeiträume wie für Auswertung der Warnschwellen nach WHO oder EU Richtlinien notwendig.
 
 ### 2. Voraussetzungen
 
 - IP-Symcon ab Version 5.5
-- Air-Q von https://www.air-q.com/ (Getestet mit der Science-Version)
+- Air-Q von https://www.air-q.com/ und direktem Zugriff auf die Weboberfläche. (Getestet mit der Science-Version)
 
 ### 3. Software-Installation
 
@@ -42,6 +38,7 @@ Name     | Beschreibung
 URL      | Link zum Air-Q. z.B. http://192.168.0.5
 Kennwort | Gerätekennwort
 Aktualisierungsinterval | Automatische Aktualisierung alle X Sekunden.
+Refresh interval average calculation
 
 ### 5. Statusvariablen und Profile
 
@@ -55,26 +52,15 @@ Siehe Air-Q Dokumentation.
 
 #### Profile
 
-Noch in entwicklung!
+Alle notwendigen Profile werden automatisch erstellt und beginnen mit SXAIRQ.
+Für jeden Sensor wird ein eigenes Profil generiert um Grenzwerte getrennt einstellenzu können.
 
-Name   | Typ
------- | -------
-       |
-       |
 
 ### 6. WebFront
 
 Das Modul besitzt keine spezielle WebFront funktion.
 
 ### 7. PHP-Befehlsreferenz
-
-`void SXAIRQ_CreateUnknownVariables(integer $InstanzID);`
-Erstellt für alle unbekannten Sensordaten des Air-Q eigene Variablen.
-Der Air-Q muss vor der Verwendung dieser Funktion vollständig konfiguriert und erreichbar sein.
-
-Beispiel:
-`SXAIRQ_CreateUnknownVariables(12345);`
-
 
 
 `bool SXAIRQ_TestConnection(integer $InstanzID);`
@@ -89,11 +75,12 @@ Beispiel:
 
 
 
-`void SXAIRQ_Update(integer $InstanzID);`
+`void SXAIRQ_Update(integer $InstanzID, boolean $includeAggregated = false);`
 Aktualisiert die Daten des Air-Q sofort.
 Der Air-Q muss vor der Verwendung dieser Funktion vollständig konfiguriert und erreichbar sein.
+Bei $includeAggregated = true werden zusätzlich die gleitenden Durchschnittswerte berechnet. Wenn false, dann werden die zuletzt berechneten Werte als Referenz genommen.
 
 Beispiel:
 `SXAIRQ_Update(12345);`
-
+`SXAIRQ_Update(12345, true);`
 
