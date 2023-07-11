@@ -54,7 +54,7 @@ class AirQ extends IPSModule
 		$this->RegisterVariableString('DeviceID', $this->Translate('DeviceID'));
 		$this->RegisterVariableString('Status', $this->Translate('Status'));
 		$this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
-		
+
 		$this->RegisterTimer("update", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "update");');
 		$this->RegisterTimer("updateAverage", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refreshAverage') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "updateAverage");');
 	}
@@ -326,14 +326,8 @@ class AirQ extends IPSModule
 				// Sensor disabled or is in StatusVars'
 				continue;
 			}
-
+			$statusCreated = false;
 			$indentSensorStatus = $sensor['Sensor'] . '_status';
-			$SensorStatusID = $this->RegisterVariableInteger($indentSensorStatus, $sensor['FriendlyName'] . ' - ' . $this->Translate('Status'));
-
-			if (!array_key_exists($indentSensorStatus, $newSeverity)) {
-				$newSeverity[$indentSensorStatus] = 0;
-			}
-
 			$indentSensorValue = $sensor['Sensor'];
 			if (array_key_exists($indentSensorValue, $data)) {
 				if (is_array($data[$indentSensorValue])) {
@@ -349,7 +343,7 @@ class AirQ extends IPSModule
 
 				if ($value2) {
 					$devID = $this->RegisterVariableFloat(
-						$indentSensorValue . '_dev', 
+						$indentSensorValue . '_dev',
 						$sensor['FriendlyName'] . ' (' . $this->Translate('deviation') . ')'
 					);
 
@@ -358,6 +352,16 @@ class AirQ extends IPSModule
 			}
 
 			foreach ($sensor['Limits'] as $limit) {
+				if (!$statusCreated && ($limit['UpperLimit'] != 0 || $limit['LowerLimit'] != 0)) {
+					
+					$this->RegisterVariableInteger($indentSensorStatus, $sensor['FriendlyName'] . ' - ' . $this->Translate('Status'));
+					
+					if (!array_key_exists($indentSensorStatus, $newSeverity)) {
+						$newSeverity[$indentSensorStatus] = 0;
+					}
+					$statusCreated = true;
+				}
+
 				if ($limit['Timespan'] == 0) {
 					$variableID = $SensorValueID;
 
@@ -374,14 +378,14 @@ class AirQ extends IPSModule
 					$indentValue = $sensor['Sensor'] . '_' . $limit['Timespan'];
 					$indentStatus = $sensor['Sensor'] . '_' . $limit['Timespan'] . '_status';
 					$variableID = $this->RegisterVariableFloat(
-						$indentValue, 
-						$sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ')', 
+						$indentValue,
+						$sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ')',
 						$this->GetProfileNameForSensor($sensor)
 					);
-	
+
 					$statusVariableID = $this->RegisterVariableInteger(
 						$indentStatus,
-						 $sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ') - Status', 
+						$sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ') - Status',
 						'SXAIRQ.Status'
 					);
 
@@ -423,6 +427,13 @@ class AirQ extends IPSModule
 				$val = $data[$StatusVar];
 				$valID = $this->GetIDForIdent($StatusVar);
 				if ($valID) {
+
+					switch ($StatusVar) {
+						case 'timestamp':
+							$val = $val / 1000;
+							break;
+					}
+
 					SetValue($valID, $val);
 				}
 			}
