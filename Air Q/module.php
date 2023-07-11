@@ -50,10 +50,12 @@ class AirQ extends IPSModule
 		$this->RegisterPropertyInteger("refreshAverage", 20);
 		$this->RegisterPropertyString('Sensors', '');
 
-		$this->RegisterVariableInteger('timestamp', $this->Translate('Measure Time'), '~UnixTimestamp');
+		$this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
 		$this->RegisterVariableString('DeviceID', $this->Translate('DeviceID'));
 		$this->RegisterVariableString('Status', $this->Translate('Status'));
 		$this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
+		$this->RegisterVariableInteger('measuretime', $this->Translate('Measuretime'), '');
+		
 
 		$this->RegisterTimer("update", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "update");');
 		$this->RegisterTimer("updateAverage", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refreshAverage') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "updateAverage");');
@@ -426,9 +428,8 @@ class AirQ extends IPSModule
 		foreach ($this->StatusVars as $StatusVar) {
 			if (array_key_exists($StatusVar, $data)) {
 				$val = $data[$StatusVar];
-				$valID = $this->GetIDForIdent($StatusVar);
+				$valID = @$this->GetIDForIdent($StatusVar);
 				if ($valID) {
-
 					switch ($StatusVar) {
 						case 'timestamp':
 							$val = $val / 1000;

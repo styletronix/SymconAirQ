@@ -36,6 +36,10 @@
             "caption": "You can use functions to reduce the logging count, but you should persist at least 1 value every 5 minute over the required timespan."
         },
         {
+            "type": "Label",
+            "caption": "Use 'Refresh Sensorlist' to populate the List with Sensors after applying changes or enter Sensornames yourself."
+        },
+        {
             "type": "List",
             "name": "Sensors",
             "caption": "Sensors",

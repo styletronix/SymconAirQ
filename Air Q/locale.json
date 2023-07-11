@@ -40,7 +40,10 @@
             "Could not parse decrypted data.": "Konnte entschlüsselde Daten nicht analysieren.",
             "Error": "Fehler",
             "OK - This is the received Data:": "Erfolgreich - Dies sind die empfangenen Daten:",
-            "Refresh Sensorlist": "Liste mit Sensoren aktualisieren."
+            "Refresh Sensorlist": "Liste mit Sensoren aktualisieren.",
+            "Timestamp": "Zeitpunkt",
+            "Measuretime": "Messzeit",
+            "Use 'Refresh Sensorlist' to populate the List with Sensors after applying changes or enter Sensornames yourself.": "Benutze 'Liste mit Sensoren aktualisieren.' um die folgende Liste zu füllen nachdem die Änderungen angewendet wurden. Oder geben Sie die Sensoren selbst ein.
         }
     }
 }
