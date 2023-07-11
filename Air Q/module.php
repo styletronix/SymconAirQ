@@ -464,9 +464,9 @@ class AirQ extends IPSModule
 		$date->setTime(0, 0, 0);
 
 		if ($date->format('N') == 1) {
-			return $date;
+			return $date->getTimestamp();
 		} else {
-			return $date->modify('last monday');
+			return $date->modify('last monday')->getTimestamp();
 		}
 	}
 	/**
