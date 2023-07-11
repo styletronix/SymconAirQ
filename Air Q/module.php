@@ -399,8 +399,8 @@ class AirQ extends IPSModule
 							($limit['UpperLimit'] != 0 && $value > $limit['UpperLimit']) ||
 							($limit['LowerLimit'] != 0 && $value < $limit['LowerLimit'])
 						) {
-							if (!$newSeverity[$variableID] >= $limit['Severity']) {
-								$newSeverity[$variableID] = $limit['Severity'];
+							if (!$newSeverity[$indentStatus] >= $limit['Severity']) {
+								$newSeverity[$indentStatus] = $limit['Severity'];
 							}
 						}
 					}
