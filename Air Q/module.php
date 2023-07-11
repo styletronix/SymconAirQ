@@ -623,7 +623,8 @@ class AirQ extends IPSModule
 						$sensorlist[] = [
 							"Sensor" => $key,
 							"FriendlyName" => $key,
-							"Enabled" => false
+							"Enabled" => false,
+							"Limits" => []
 						];
 					}
 				}
