@@ -16,7 +16,16 @@
             "Status": "Status",
             "Measure Time": "Zeitpunkt der Messung",
             "DeviceID": "Geräte ID",
-            "Oxygen (O2)": "Sauerstoff (O2)"
+            "Oxygen (O2)": "Sauerstoff (O2)",
+            "timestamp": "Zeitpunkt",
+            "uptime": "Laufzeit",
+            "measuretime": "Messzeitpunkt",
+            "deviation": "Abweichung",
+            "OK": "OK",
+            "Information": "Information",
+            "Warning": "Warnung",
+            "Danger": "Gefahr",
+            "Uptime": "Laufzeit"
         }
     }
 }

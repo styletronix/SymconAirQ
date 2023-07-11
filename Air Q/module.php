@@ -9,6 +9,40 @@ class AirQ extends IPSModule
 
 		$this->RegisterAttributeInteger('NewID', 1);
 
+		$this->CreateProfileIfNotExists('oxygen', 2, '%', 0, 100);
+		$this->CreateProfileIfNotExists('co', 3, 'mg/m³', 0, 100);
+		$this->CreateProfileIfNotExists('co2', 0, 'ppm', 0, 10000);
+		$this->CreateProfileIfNotExists('o3', 2, 'µg/m', 0, 1000);
+		$this->CreateProfileIfNotExists('no2', 1, 'µg/m³', 0, 1000);
+		$this->CreateProfileIfNotExists('humidity_abs', 1, 'g/m³', 0, 100);
+		$this->CreateProfileIfNotExists('temperature', 2, '°C', -30, 100);
+		$this->CreateProfileIfNotExists('dewpt', 2, '°C', 0, 100);
+		$this->CreateProfileIfNotExists('TypPs', 1, 'PM', 0, 10);
+		$this->CreateProfileIfNotExists('sound', 1, 'dB', 0, 100);
+		$this->CreateProfileIfNotExists('sound_max', 'db', '%', 0, 100);
+		$this->CreateProfileIfNotExists('humidity', 1, '%', 0, 100);
+		$this->CreateProfileIfNotExists('virus', 1, '%', 0, 100);
+		$this->CreateProfileIfNotExists('performance', 1, '%', 0, 100);
+		$this->CreateProfileIfNotExists('pressure', 1, 'hPa', 500, 1600);
+		$this->CreateProfileIfNotExists('tvoc', 0, 'ppb', 0, 10000);
+		$this->CreateProfileIfNotExists('h2s', 1, 'µg/m³', 0, 100);
+		$this->CreateProfileIfNotExists('performance', 1, '%', 0, 100);
+		$this->CreateProfileIfNotExists('pm1', 0, 'µg/m³', 0, 1000);
+		$this->CreateProfileIfNotExists('pm10', 0, 'µg/m³', 0, 1000);
+		$this->CreateProfileIfNotExists('pm2_5', 0, 'µg/m³', 0, 1000);
+		$this->CreateProfileIfNotExists('dCO2dt', 3, '', -1000, 1000);
+		$this->CreateProfileIfNotExists('dHdt', 3, '', -1000, 1000);
+		$this->CreateProfileIfNotExists('dCO2dt', 2, '', -1000, 1000);
+
+		$name = 'SXAIRQ.Status';
+		if (!IPS_VariableProfileExists($name)) {
+			IPS_CreateVariableProfile($name, 1);
+			IPS_SetVariableProfileAssociation($name, 0, $this->Translate('OK'));
+			IPS_SetVariableProfileAssociation($name, 1, $this->Translate('Information'));
+			IPS_SetVariableProfileAssociation($name, 2, $this->Translate('Warning'));
+			IPS_SetVariableProfileAssociation($name, 3, $this->Translate('Danger'));
+		}
+
 		$this->RegisterPropertyBoolean('active', false);
 		$this->RegisterPropertyString('url', 'http://');
 		$this->RegisterPropertyString('password', '');
@@ -16,34 +50,11 @@ class AirQ extends IPSModule
 		$this->RegisterPropertyInteger("refreshAverage", 20);
 		$this->RegisterPropertyString('Sensors', '');
 
-		$this->RegisterVariableInteger('timestamp', $this->Translate('Measure Time'));
+		$this->RegisterVariableInteger('timestamp', $this->Translate('Measure Time'), '~UnixTimestamp');
 		$this->RegisterVariableString('DeviceID', $this->Translate('DeviceID'));
-
-		// TODO: Create Profiles
-		// TODO: Internal list of Captions for Sensors in form.json
-
-		// $this->RegisterVariableFloat('health', $this->Translate('Health');
-		// $this->RegisterVariableFloat('performance', $this->Translate('Performance');
-		// $this->RegisterVariableFloat('virus', $this->Translate('Virusfrei-Index');
-		// $this->RegisterVariableFloat('co2', $this->Translate('Kohlendioxid (CO2)');
-		// $this->RegisterVariableFloat('co', $this->Translate('Kohlenmonixod (CO)');
-		// $this->RegisterVariableFloat('o3', $this->Translate('Ozon (O3)');
-		// $this->RegisterVariableFloat('pm1', $this->Translate('Feinstaub (PM1)');
-		// $this->RegisterVariableFloat('pm2_5', $this->Translate('Feinstaub (PM2.5)');
-		// $this->RegisterVariableFloat('pm10', $this->Translate('Feinstaub (PM10)');
-		// $this->RegisterVariableInteger('TypPS', $this->Translate('Feinstaub Partikelgröße');
-		// $this->RegisterVariableFloat('oxygen', $this->Translate('Sauerstoff (O2)');
-		// $this->RegisterVariableFloat('h2s', $this->Translate('Schwefelwasserstoff (H2S)');
-		// $this->RegisterVariableFloat('no2', $this->Translate('Stickstoffdioxid (NO2)');
-		// $this->RegisterVariableFloat('tvoc', $this->Translate('VOC');
-		// $this->RegisterVariableFloat('temperature', '$this->Translate(Temperatur');
-		// $this->RegisterVariableFloat('sound', 'Lautstärke');
-		// $this->RegisterVariableFloat('sound_max', 'Lautstärke (max)');
-		// $this->RegisterVariableFloat('pressure', 'Luftdruck');
-		// $this->RegisterVariableFloat('humidity', 'Luftfeuchtigkeit (relativ)');
-		// $this->RegisterVariableFloat('humidity', 'Luftfeuchtigkeit (absolut)');
-		// $this->RegisterVariableFloat('dewpt', 'Taupunkt');
-
+		$this->RegisterVariableString('Status', $this->Translate('Status'));
+		$this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
+		
 		$this->RegisterTimer("update", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "update");');
 		$this->RegisterTimer("updateAverage", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refreshAverage') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "updateAverage");');
 	}
@@ -225,7 +236,18 @@ class AirQ extends IPSModule
 	// 		}
 	// 	}
 	// }
+	private function CreateProfileIfNotExists($name, $digits, $suffix, $min, $max, $type = 2)
+	{
+		$name = 'SXAIRQ.' . $name;
+		if (!IPS_VariableProfileExists($name)) {
+			IPS_CreateVariableProfile($name, $type);
+			IPS_SetVariableProfileDigits($name, $digits);
+			IPS_SetVariableProfileText($name, '', ' ' . $suffix);
+			IPS_SetVariableProfileValues($name, $min, $max, 1);
+		}
 
+		return $name;
+	}
 	public function GetDataDecoded()
 	{
 		$pw = $this->ReadPropertyString('password');
@@ -275,18 +297,36 @@ class AirQ extends IPSModule
 	{
 		$data = $this->GetDataDecoded();
 		if ($data) {
-			$this->WriteValues($data, $includeAggregated);
+			$this->WriteSensorDataValues($data, $includeAggregated);
+			$this->WriteStatusValues($data);
 
 			$this->SetStatus(102);
 		}
 	}
-
-	public function WriteValues($data, $includeAggregated = false)
+	private function GetProfileNameForSensor($sensor)
+	{
+		$profileName = 'SXAIRQ.' . $sensor['Sensor'];
+		if (IPS_VariableProfileExists($profileName)) {
+			return $profileName;
+		} else {
+			return '';
+		}
+	}
+	private function GetVariableIDForSensor($sensor)
+	{
+		return $this->RegisterVariableFloat($sensor['Sensor'], $sensor['FriendlyName'], $this->GetProfileNameForSensor($sensor));
+	}
+	private function WriteSensorDataValues($data, $includeAggregated = false)
 	{
 		$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
 		$newSeverity = [];
 
 		foreach ($sensorlist as $sensor) {
+			if (!$sensor['Enabled'] || in_array($sensor['Sensor'], $this->StatusVars)) {
+				// Sensor disabled or is in StatusVars'
+				continue;
+			}
+
 			$indentSensorStatus = $sensor['Sensor'] . '_status';
 			$SensorStatusID = $this->RegisterVariableInteger($indentSensorStatus, $sensor['FriendlyName'] . ' - ' . $this->Translate('Status'));
 
@@ -296,14 +336,25 @@ class AirQ extends IPSModule
 
 			$indentSensorValue = $sensor['Sensor'];
 			if (array_key_exists($indentSensorValue, $data)) {
-				if (is_array($data[$indentSensorValue])){
+				if (is_array($data[$indentSensorValue])) {
 					$value = $data[$indentSensorValue][0];
-				}else{
+					$value2 = $data[$indentSensorValue][1];
+				} else {
 					$value = $data[$indentSensorValue];
+					$value2 = null;
 				}
 				$currentValue = ($value + ($sensor['Offset'] ?? 0.0)) * ($sensor['Multiplicator'] ?? 1.0);
-				$SensorValueID = $this->RegisterVariableFloat($indentSensorValue, $sensor['FriendlyName']);
+				$SensorValueID = $this->GetVariableIDForSensor($sensor);
 				SetValue($SensorValueID, $currentValue);
+
+				if ($value2) {
+					$devID = $this->RegisterVariableFloat(
+						$indentSensorValue . '_dev', 
+						$sensor['FriendlyName'] . ' (' . $this->Translate('deviation') . ')'
+					);
+
+					SetValue($devID, $value2);
+				}
 			}
 
 			foreach ($sensor['Limits'] as $limit) {
@@ -322,15 +373,24 @@ class AirQ extends IPSModule
 				} elseif ($includeAggregated) {
 					$indentValue = $sensor['Sensor'] . '_' . $limit['Timespan'];
 					$indentStatus = $sensor['Sensor'] . '_' . $limit['Timespan'] . '_status';
-					$variableID = $this->RegisterVariableFloat($indentValue, $sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ')');
-					$statusVariableID = $this->RegisterVariableFloat($indentStatus, $sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ') - Status');
+					$variableID = $this->RegisterVariableFloat(
+						$indentValue, 
+						$sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ')', 
+						$this->GetProfileNameForSensor($sensor)
+					);
+	
+					$statusVariableID = $this->RegisterVariableInteger(
+						$indentStatus,
+						 $sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ') - Status', 
+						'SXAIRQ.Status'
+					);
 
 					if (!array_key_exists($indentStatus, $newSeverity)) {
 						$newSeverity[$indentStatus] = 0;
 					}
 
 					$t = time();
-					$rollingAverage = $this->GetAggregatedFloatingValue($SensorValueID, $t - ($limit['Timespan'] * 60), $t);
+					$rollingAverage = $this->GetAggregatedRollingAverage($SensorValueID, $t - ($limit['Timespan'] * 60), $t);
 					if ($rollingAverage) {
 						$value = $rollingAverage['Avg'];
 						SetValue($variableID, $value);
@@ -349,10 +409,25 @@ class AirQ extends IPSModule
 		}
 
 		foreach ($newSeverity as $key => $val) {
-			SetValue($this->GetIDForIdent($key), $val);
+			$statusID = @$this->GetIDForIdent($key);
+			if ($statusID) {
+				SetValue($statusID, $val);
+			}
 		}
 	}
-
+	private $StatusVars = ['timestamp', 'Status', 'uptime', 'DeviceID', 'measuretime'];
+	private function WriteStatusValues($data)
+	{
+		foreach ($this->StatusVars as $StatusVar) {
+			if (array_key_exists($StatusVar, $data)) {
+				$val = $data[$StatusVar];
+				$valID = $this->GetIDForIdent($StatusVar);
+				if ($valID) {
+					SetValue($valID, $val);
+				}
+			}
+		}
+	}
 	private function getDataFromUrl($url)
 	{
 		$ch = curl_init();
@@ -365,8 +440,29 @@ class AirQ extends IPSModule
 		curl_close($ch);
 		return $data;
 	}
+	/**
+	 * Returns the first Monday after a given date or date if it already is a monday.
+	 */
+	function getStartOfWeekDate($date)
+	{
+		if ($date instanceof \DateTime) {
+			$date = clone $date;
+		} else {
+			$date = new \DateTime($date);
+		}
 
-	private function GetAggregatedFloatingValue($varId, $start, $end, $archiveControlID = null)
+		$date->setTime(0, 0, 0);
+
+		if ($date->format('N') == 1) {
+			return $date;
+		} else {
+			return $date->modify('last monday');
+		}
+	}
+	/**
+	 * Returns a single Average, Max, Min and Duration from Start to End by using previousely aggregated values for minutes, hours, days and weeks to efficiently calculate a rolling average down to 1 minute resolution.
+	 */
+	private function GetAggregatedRollingAverage($varId, $start, $end, $archiveControlID = null)
 	{
 		if (!$archiveControlID) {
 			$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
@@ -415,8 +511,33 @@ class AirQ extends IPSModule
 			$end = $start + $diff;
 		}
 
-		### Now in Steps of Days Hours and Minutes
+		#Get days to previous Monday
+		if ($diff > 86400) {
+			$startOfWeek = getStartOfWeekDate($end);
+			$diffToFit = $end - $startOfWeek;
+			if ($diffToFit > $diff) {
+				$diffToFit = $diff;
+			}
+			$diffToFit = floor($diffToFit / 86400) * 86400;
+			if ($diffToFit >= 86400) {
+				$werte = @AC_GetAggregatedValues($archiveControlID, $varId, 1, $end - $diffToFit, $end - 1, 0);
+				if ($werte) {
+					$avgs = array_merge($avgs, $werte);
+				}
+				$diff = $diff - $diffToFit;
+			}
+			$end = $start + $diff;
+		}
+
+		// I don't think monthly or yearly aggregated values would make any sense because the most averages needed here are below 1 day or at max. 1 year
+
+		### Now full the rest in Steps of Weeks, Days Hours and Minutes
 		while ($diff > 0) {
+			if ($diff >= 604800) {
+				## Full Week
+				$diffToFit = floor($diff / 604800) * 604800;
+				$level = 2;
+			}
 			if ($diff >= 86400) {
 				## Full Days
 				$diffToFit = floor($diff / 86400) * 86400;
@@ -444,6 +565,7 @@ class AirQ extends IPSModule
 			$diff = $diff - $diffToFit;
 		}
 
+		### Create the overall Average of all collected aggregated values.
 		$avgSum = 0;
 		$avgCount = 0;
 		$max = 0;
@@ -470,6 +592,7 @@ class AirQ extends IPSModule
 		];
 	}
 
+	/** Decrypt from AES256-CEB  */
 	private function decryptString($data, $password)
 	{
 		$password = mb_convert_encoding($password, "UTF-8");
