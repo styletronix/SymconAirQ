@@ -25,7 +25,22 @@
             "Information": "Information",
             "Warning": "Warnung",
             "Danger": "Gefahr",
-            "Uptime": "Laufzeit"
+            "Uptime": "Laufzeit",
+            "To use Rolling Averages for Sensor values, the logging of the corresponding variables must be activated.": "Um einen gleitenden Durchschnitt für Variablen zu berechnen, muss für die entsprechende Variable die Archivierung aktiviert sein.",
+            "You can use functions to reduce the logging count, but you should persist at least 1 value every 5 minute over the required timespan.": "Diese muss den gesamten Zeitraum der Durchschnittsberechnung abdecken und sollte bei nicht weniger als 1 Wert pro 5 Minuten liegen.",
+            "Is Rolling Average": "Ist gleitender Durchschnitt",
+            " Min.": " Min.",
+            " Minutes.": " Minuten",
+            "Timespan Offset for rolling average": "Zeitspanne für gleitenden Durchschnitt.",
+            "Failed. See Debug window for details.": "Fehlgeschlagen. Siehe debug Fenster für Details.",
+            "Password missing": "Kennwort fehlt",
+            "URL missing": "URL nicht angegeben",
+            "Could not get data from device.": "Konte Daten nicht vom Gerät laden",
+            "Could not decrypt data.": "Konnte Daten nicht entschlüsseln",
+            "Could not parse decrypted data.": "Konnte entschlüsselde Daten nicht analysieren.",
+            "Error": "Fehler",
+            "OK - This is the received Data:": "Erfolgreich - Dies sind die empfangenen Daten:",
+            "Refresh Sensorlist": "Liste mit Sensoren aktualisieren."
         }
     }
 }

@@ -37,7 +37,7 @@ class AirQ extends IPSModule
 		$name = 'SXAIRQ.Status';
 		if (!IPS_VariableProfileExists($name)) {
 			IPS_CreateVariableProfile($name, 1);
-			IPS_SetVariableProfileAssociation($name, 0, $this->Translate('OK'),'', 0x00FF00);
+			IPS_SetVariableProfileAssociation($name, 0, $this->Translate('OK'), '', 0x00FF00);
 			IPS_SetVariableProfileAssociation($name, 1, $this->Translate('Information'), '', 0x0000DD);
 			IPS_SetVariableProfileAssociation($name, 2, $this->Translate('Warning'), '', 0xFFFF00);
 			IPS_SetVariableProfileAssociation($name, 3, $this->Translate('Danger'), '', 0xFF0000);
@@ -120,49 +120,50 @@ class AirQ extends IPSModule
 		try {
 			$pw = $this->ReadPropertyString('password');
 			if (!$pw) {
-				echo ('Password missing');
+				echo $this->Translate('Password missing');
 				return false;
 			}
 			$url = trim($this->ReadPropertyString('url'), '\\') . '/data';
 			if (!$url) {
-				echo ('URL missing');
+				echo $this->Translate('URL missing');
 				return false;
 			}
 
 			$json = $this->getDataFromUrl($url);
 			$this->SendDebug("1. getDataFromUrl", $json, 0);
 			if (!$json) {
-				echo ('Could not get data from device.');
+				echo $this->Translate('Could not get data from device.');
 				return false;
 			}
 
 			$data = json_decode($json, true);
 			$this->SendDebug("2. json_decode encrypted", $data['content'], 0);
 			if (!is_array($data) || count($data) == 0) {
-				echo ('Could not get data from device.');
+				echo $this->Translate('Could not get data from device.');
 				return false;
 			}
 
 			$data = $this->decryptString($data['content'], $pw);
 			$this->SendDebug("3. decryptString", $data, 0);
 			if (!$data) {
-				echo ('Could not decrypt data.');
+				echo $this->Translate('Could not decrypt data.');
 				return false;
 			}
 
 			$data = json_decode($data, true);
 			if (!is_array($data) || count($data) == 0) {
-				echo ('Could not decrypt data from device.');
+				echo $this->Translate('Could not parse decrypted data.');
 				return false;
 			}
 
-			echo "OK";
+			echo $this->Translate('OK - This is the received Data:') . "\n\n" . json_encode($data);
+
 			return true;
 		} catch (Exception $ex) {
-			$this->SendDebug("Error", $ex, 0);
+			$this->SendDebug($this->Translate("Error"), $ex, 0);
 		}
 
-		echo "Failed";
+		echo $this->Translate("Failed. See Debug window for details.");
 		return false;
 	}
 
@@ -353,9 +354,9 @@ class AirQ extends IPSModule
 
 			foreach ($sensor['Limits'] as $limit) {
 				if (!$statusCreated && ($limit['UpperLimit'] != 0 || $limit['LowerLimit'] != 0)) {
-					
+
 					$this->RegisterVariableInteger($indentSensorStatus, $sensor['FriendlyName'] . ' - ' . $this->Translate('Status'));
-					
+
 					if (!array_key_exists($indentSensorStatus, $newSeverity)) {
 						$newSeverity[$indentSensorStatus] = 0;
 					}
@@ -454,7 +455,7 @@ class AirQ extends IPSModule
 	/**
 	 * Returns the first Monday after a given date or date if it already is a monday.
 	 */
-	function getStartOfWeekDate($date)
+	private function getStartOfWeekDate($date)
 	{
 		if ($date instanceof \DateTime) {
 			$date = clone $date;
@@ -602,7 +603,34 @@ class AirQ extends IPSModule
 			"Avgs" => $avgs
 		];
 	}
+	public function UpdateSensorList()
+	{
+		$data = $this->GetDataDecoded();
+		if ($data) {
+			$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
 
+			foreach ($data as $key => $val) {
+				if (!in_array($key, $this->StatusVars)) {
+					$found = false;
+					foreach ($sensorlist as $sensor) {
+						if ($sensor['Sensor'] == $key) {
+							$found = true;
+							break;
+						}
+					}
+					if (!$found){
+						$sensorlist[] = [
+							"Sensor" => $key,
+							"FriendlyName" => $key,
+							"Enabled" => false
+						];
+					}
+				}
+			}
+
+			$this->UpdateFormField('Sensors', 'values', json_encode($sensorlist));
+		}
+	}
 	/** Decrypt from AES256-CEB  */
 	private function decryptString($data, $password)
 	{

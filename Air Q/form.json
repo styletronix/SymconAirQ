@@ -28,6 +28,14 @@
             "suffix": "seconds"
         },
         {
+            "type": "Label",
+            "caption": "To use Rolling Averages for Sensor values, the logging of the corresponding variables must be activated."
+        },
+        {
+            "type": "Label",
+            "caption": "You can use functions to reduce the logging count, but you should persist at least 1 value every 5 minute over the required timespan."
+        },
+        {
             "type": "List",
             "name": "Sensors",
             "caption": "Sensors",
@@ -118,25 +126,17 @@
                                 }
                             },
                             {
-                                "caption": "Is Floating",
-                                "name": "IsFloating",
-                                "width": "0px",
-                                "add": true,
-                                "edit": {
-                                    "type": "CheckBox"
-                                }
-                            },
-                            {
-                                "caption": "Timespan Offset",
+                                "caption": "Timespan Offset for rolling average",
                                 "name": "TimespanOffset",
                                 "add": 0,
                                 "align": "right",
                                 "width": "0px",
                                 "edit": {
                                     "type": "NumberSpinner",
-                                    "suffix": " Min."
+                                    "suffix": " Minutes."
                                 }
                             },
+                            
                             {
                                 "caption": "Upper Limit",
                                 "name": "UpperLimit",
@@ -171,37 +171,14 @@
                         ]
                     }
                 }
-            ],
-            "values": [
-                {
-                    "Sensor": "oxygen",
-                    "FriendlyName": "Oxygen (O2)",
-                    "Multiplicator": 1,
-                    "Offset": 0,
-                    "Limits": [
-                        {
-                            "Timespan": 0,
-                            "UpperLimit": 22.0,
-                            "LowerLimit": 19.0,
-                            "Severity": 2
-                        }
-                    ]
-                },
-                {
-                    "Sensor": "timespan",
-                    "FriendlyName": "Measure Time",
-                    "Multiplicator": 0.001,
-                    "Offset": 0,
-                    "Limits": []
-                }
             ]
         }
     ],
     "actions": [
         {
             "type": "Button",
-            "caption": "Create all received variables",
-            "onClick": "SXAIRQ_CreateUnknownVariables($id);"
+            "caption": "Refresh Sensorlist",
+            "onClick": "SXAIRQ_UpdateSensorList($id);"
         },
         {
             "type": "Button",
