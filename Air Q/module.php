@@ -19,7 +19,7 @@ class AirQ extends IPSModule
 		$this->CreateProfileIfNotExists('dewpt', 2, '°C', 0, 100);
 		$this->CreateProfileIfNotExists('TypPs', 1, 'PM', 0, 10);
 		$this->CreateProfileIfNotExists('sound', 1, 'dB', 0, 100);
-		$this->CreateProfileIfNotExists('sound_max', 'db', '%', 0, 100);
+		$this->CreateProfileIfNotExists('sound_max', 1, 'db', 0, 100);
 		$this->CreateProfileIfNotExists('humidity', 1, '%', 0, 100);
 		$this->CreateProfileIfNotExists('virus', 1, '%', 0, 100);
 		$this->CreateProfileIfNotExists('performance', 1, '%', 0, 100);
