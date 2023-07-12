@@ -377,7 +377,7 @@ class AirQ extends IPSModule
 		'Hour' => 60,
 		'Minute' => 1
 	];
-	private function minuteTimeSpanToFriendlyName($timespan)
+	private function minuteTimeSpanToFriendlyName($timespan,$divergenceMax = 0.04)
 	{
 		$timespans = self::$knownTimeSpansMinute;
 		arsort($timespans, SORT_NUMERIC);
@@ -385,6 +385,7 @@ class AirQ extends IPSModule
 		$arr = [];
 		$span = null;
 		$result = [];
+		$total = 0;
 
 		foreach ($timespans as $key => $val) {
 			if ($timespan <= 0) {
@@ -392,14 +393,20 @@ class AirQ extends IPSModule
 			}
 
 			$f = floor($timespan / $val);
-			if ($f = 1) {
+			if ($f == 0 && $val / ($total + $timespan) < (1.0 + $divergenceMax)) {
+				$f = 1;
+			}
+
+
+			if ($f == 1) {
 				$result[] = $f . ' ' . $this->Translate($key);
 			} elseif ($f > 1) {
 				$result[] = $f . ' ' . $this->Translate($key . 's');
 			}
 
 			if ($f > 0) {
-				if (($f * $val) / $timespan > 0.95) {
+				$total = $total + $f * $val;
+				if ($total / $timespan > (1.0 - $divergenceMax)) {
 					// Ignore remaining if more than 95% of the value has been evaluated because the precision is not required and shorter result is better.
 					break;
 				}
