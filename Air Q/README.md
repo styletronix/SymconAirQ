@@ -91,7 +91,8 @@ Liest die aktuellen Daten aus Air-Q und gibt diese als unbearbeitetes Array mit 
 Liefert Null bei Fehler.
 
 Beispiel:
-`$data = SXAIRQ_GetDataDecoded(12345);
+```php
+$data = SXAIRQ_GetDataDecoded(12345);
 foreach ($data as $key => $val){
 	if (is_array($val)) {
 		$value = $val[0];
@@ -102,4 +103,5 @@ foreach ($data as $key => $val){
 	}
 
 	print ('Sensor ' . $key . ' - Value: ' . $value . "\n");
-}`
+}
+```
