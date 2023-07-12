@@ -81,7 +81,6 @@ Der Air-Q muss vor der Verwendung dieser Funktion vollständig konfiguriert und 
 Bei $includeAggregated = true werden zusätzlich die gleitenden Durchschnittswerte berechnet. Wenn false, dann werden die zuletzt berechneten Werte als Referenz genommen.
 
 Beispiel:
-`SXAIRQ_Update(12345);`
 `SXAIRQ_Update(12345, true);`
 
 
@@ -93,6 +92,7 @@ Liefert Null bei Fehler.
 Beispiel:
 ```php
 $data = SXAIRQ_GetDataDecoded(12345);
+
 foreach ($data as $key => $val){
 	if (is_array($val)) {
 		$value = $val[0];
