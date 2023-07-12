@@ -379,16 +379,19 @@ class AirQ extends IPSModule
 	];
 	private function minuteTimeSpanToFriendlyName($timespan)
 	{
+		$timespans = self::$knownTimeSpansMinute;
+		arsort($timespans, SORT_NUMERIC);
+
 		$arr = [];
 		$span = null;
 		$result = [];
 
-		foreach (self::$knownTimeSpansMinute as $key => $val) {
+		foreach ($timespans as $key => $val) {
 			if ($timespan <= 0) {
 				break;
 			}
 
-			$f = floor($timespan / $val) * $val;
+			$f = floor($timespan / $val);
 			if ($f = 1) {
 				$result[] = $f . ' ' . $this->Translate($key);
 			} elseif ($f > 1) {

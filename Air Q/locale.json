@@ -97,7 +97,8 @@
             "Hour": "Stunde",
             "Hours": "Stunden",
             "Minute": "Minute",
-            "Minutes": "Minuten"
+            "Minutes": "Minuten",
+            "Sensors": "Sensoren"
         }
     }
 }
