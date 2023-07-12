@@ -3,36 +3,156 @@
 declare(strict_types=1);
 class AirQ extends IPSModule
 {
+	private static $StatusVars = ['timestamp', 'Status', 'uptime', 'DeviceID', 'measuretime'];
+	private static $defaultSensors = [
+		'no2' => [
+			'friendlyName' => 'Nitrogen dioxide (NO₂)',
+			'suffix' => 'µg/m³'
+		],
+		'pm1' => [
+			'friendlyName' => 'Particulate matter PM₁',
+			'suffix' => 'µg/m³'
+		],
+		'pm2_5' => [
+			'friendlyName' => 'Particulate matter PM₂,₅',
+			'suffix' => 'µg/m³'
+		],
+		'pm10' => [
+			'friendlyName' => 'Particulate matter PM₁₀',
+			'suffix' => 'µg/m³'
+		],
+		'co2' => [
+			'friendlyName' => 'Carbon dioxide (CO₂)',
+			'suffix' => 'ppm'
+		],
+		'oxygen' => [
+			'friendlyName' => 'Oxygen (O₂)',
+			'suffix' => '%'
+		],
+		'o3' => [
+			'friendlyName' => 'Ozone (O₃)',
+			'suffix' => 'µg/m³'
+		],
+		'so2' => [
+			'friendlyName' => 'Sulfur dioxide (SO₂)',
+			'suffix' => 'mg/m³'
+		],
+		'rn' => [
+			'friendlyName' => 'Radon (Rn)'
+		],
+		'humidity_abs' => [
+			'friendlyName' => 'Absolute humidity (φ)',
+			'suffix' => 'g/m³'
+		],
+		'humidity' => [
+			'friendlyName' => 'Relative humidity (ρ)',
+			'suffix' => '%'
+		],
+		'ch2o' => [
+			'friendlyName' => 'Formaldehyde (CH₂O)'
+		],
+		'ch4' => [
+			'friendlyName' => 'Methane (CH₄)'
+		],
+		'pressure' => [
+			'friendlyName' => 'Air pressure (p)',
+			'suffix' => 'hPa'
+		],
+		'sound' => [
+			'friendlyName' => 'Noise (Lp)',
+			'suffix' => 'dB'
+		],
+		'sound_max' => [
+			'friendlyName' => 'Noise maximum (Lp_max)',
+			'suffix' => 'dB'
+		],
+		'temperature' => [
+			'friendlyName' => 'Air temperatur (T)',
+			'suffix' => '°C'
+		],
+		'tvoc' => [
+			'friendlyName' => 'Volatile Organic Compounds (VOC)',
+			'suffix' => 'ppb'
+		],
+		'h2s' => [
+			'friendlyName' => 'Hydrogen Sulfide (H₂S)',
+			'suffix' => 'µg/m³'
+		],
+		'n2o' => [
+			'friendlyName' => 'Nitrous Oxide (N₂O)',
+		],
+		'nh3' => [
+			'friendlyName' => 'Ammonia (NH₃)',
+			'suffix' => 'ppm'
+		],
+		'h2' => [
+			'friendlyName' => 'Hydrogen (H₂)',
+			'suffix' => '%'
+		],
+		'cl2' => [
+			'friendlyName' => 'Chlorine / chlorine gas (Cl₂)',
+			'suffix' => 'ppm'
+		],
+		'dewpt' => [
+			'friendlyName' => 'Dew point',
+			'suffix' => '°C'
+		],
+		'dHdt' => [
+			'friendlyName' => 'dH / dt'
+		],
+		'dCO2dt' => [
+			'friendlyName' => 'dCO2 / dt'
+		],
+		'TypPS' => [
+			'friendlyName' => 'Particulate matter type',
+			'suffix' => 'PM'
+		],
+		'health' => [
+			'friendlyName' => 'Health',
+			'suffix' => '%'
+		],
+		'performance' => [
+			'friendlyName' => 'Performance',
+			'suffix' => '%'
+		],
+		'virus' => [
+			'friendlyName' => 'Virus free index',
+			'suffix' => '%'
+		],
+		'Status' => [
+			'friendlyName' => 'Status'
+		]
+	];
+
 	public function Create()
 	{
 		parent::Create();
 
 		$this->RegisterAttributeInteger('NewID', 1);
 
-		$this->CreateProfileIfNotExists('oxygen', 2, '%', 0, 100);
-		$this->CreateProfileIfNotExists('co', 3, 'mg/m³', 0, 100);
-		$this->CreateProfileIfNotExists('co2', 0, 'ppm', 0, 10000);
-		$this->CreateProfileIfNotExists('o3', 2, 'µg/m', 0, 1000);
-		$this->CreateProfileIfNotExists('no2', 1, 'µg/m³', 0, 1000);
-		$this->CreateProfileIfNotExists('humidity_abs', 1, 'g/m³', 0, 100);
-		$this->CreateProfileIfNotExists('temperature', 2, '°C', -30, 100);
-		$this->CreateProfileIfNotExists('dewpt', 2, '°C', 0, 100);
+		$this->CreateProfileIfNotExists('oxygen', 2, '%', 0, 25);
+		$this->CreateProfileIfNotExists('co', 3, 'mg/m³', 0, 5700);
+		$this->CreateProfileIfNotExists('co2', 0, 'ppm', 0, 5000);
+		$this->CreateProfileIfNotExists('o3', 2, 'µg/m', 0, 10000);
+		$this->CreateProfileIfNotExists('no2', 1, 'µg/m³', 0, 52000);
+		$this->CreateProfileIfNotExists('humidity_abs', 1, 'g/m³', 0, 200);
+		$this->CreateProfileIfNotExists('temperature', 2, '°C', -40, 125);
+		$this->CreateProfileIfNotExists('dewpt', 2, '°C', -88, 125);
 		$this->CreateProfileIfNotExists('TypPs', 1, 'PM', 0, 10);
-		$this->CreateProfileIfNotExists('sound', 1, 'dB', 0, 100);
-		$this->CreateProfileIfNotExists('sound_max', 1, 'db', 0, 100);
+		$this->CreateProfileIfNotExists('sound', 1, 'dB', 40, 109);
+		$this->CreateProfileIfNotExists('sound_max', 1, 'db', 40, 109);
 		$this->CreateProfileIfNotExists('humidity', 1, '%', 0, 100);
 		$this->CreateProfileIfNotExists('virus', 1, '%', 0, 100);
 		$this->CreateProfileIfNotExists('performance', 1, '%', 0, 100);
-		$this->CreateProfileIfNotExists('pressure', 1, 'hPa', 500, 1600);
-		$this->CreateProfileIfNotExists('tvoc', 0, 'ppb', 0, 10000);
-		$this->CreateProfileIfNotExists('h2s', 1, 'µg/m³', 0, 100);
-		$this->CreateProfileIfNotExists('performance', 1, '%', 0, 100);
+		$this->CreateProfileIfNotExists('pressure', 1, 'hPa', 300, 1200);
+		$this->CreateProfileIfNotExists('tvoc', 0, 'ppb', 0, 60000);
+		$this->CreateProfileIfNotExists('h2s', 1, 'µg/m³', 0, 70000);
 		$this->CreateProfileIfNotExists('pm1', 0, 'µg/m³', 0, 1000);
 		$this->CreateProfileIfNotExists('pm10', 0, 'µg/m³', 0, 1000);
 		$this->CreateProfileIfNotExists('pm2_5', 0, 'µg/m³', 0, 1000);
-		$this->CreateProfileIfNotExists('dCO2dt', 3, '', -1000, 1000);
-		$this->CreateProfileIfNotExists('dHdt', 3, '', -1000, 1000);
-		$this->CreateProfileIfNotExists('dCO2dt', 2, '', -1000, 1000);
+		$this->CreateProfileIfNotExists('dCO2dt', 3, '', -100, 100);
+		$this->CreateProfileIfNotExists('dHdt', 3, '', -100, 100);
+		$this->CreateProfileIfNotExists('dCO2dt', 2, '', -100, 100);
 
 		$name = 'SXAIRQ.Status';
 		if (!IPS_VariableProfileExists($name)) {
@@ -174,6 +294,17 @@ class AirQ extends IPSModule
 
 		return $name;
 	}
+	private function GetFriendlySensorName($sensorID)
+	{
+		foreach (self::$defaultSensornames as $key => $val) {
+			if (strtolower($key) == strtolower($sensorID)) {
+				if ($val['friendlyName']) {
+					return $this->Translate($val['friendlyName']);
+				}
+			}
+		}
+		return $this->Translate($sensorID);
+	}
 	public function GetDataDecoded()
 	{
 		$pw = $this->ReadPropertyString('password');
@@ -238,6 +369,48 @@ class AirQ extends IPSModule
 			return '';
 		}
 	}
+	private static $knownTimeSpansMinute = [
+		'Year' => 525600,
+		'Month' => 43200,
+		'Week' => 10080,
+		'Day' => 1440,
+		'Hour' => 60,
+		'Minute' => 1
+	];
+	private function minuteTimeSpanToFriendlyName($timespan)
+	{
+		$arr = [];
+		$span = null;
+		$result = [];
+
+		foreach (self::$knownTimeSpansMinute as $key => $val) {
+			if ($timespan <= 0) {
+				break;
+			}
+
+			$f = floor($timespan / $val) * $val;
+			if ($f = 1) {
+				$result[] = $f . ' ' . $this->Translate($key);
+			} elseif ($f > 1) {
+				$result[] = $f . ' ' . $this->Translate($key . 's');
+			}
+
+			if ($f > 0) {
+				if (($f * $val) / $timespan > 0.95) {
+					// Ignore remaining if more than 95% of the value has been evaluated because the precision is not required and shorter result is better.
+					break;
+				}
+				$timespan = $timespan - ($f * $val);
+			}
+		}
+
+		if (count($result) == 0) {
+			return $timespan;
+		}
+
+		return implode(' ', $result);
+	}
+
 	private function GetVariableIDForSensor($sensor)
 	{
 		return $this->RegisterVariableFloat($sensor['Sensor'], $sensor['FriendlyName'], $this->GetProfileNameForSensor($sensor));
@@ -248,7 +421,7 @@ class AirQ extends IPSModule
 		$newSeverity = [];
 
 		foreach ($sensorlist as $sensor) {
-			if (!$sensor['Enabled'] || in_array($sensor['Sensor'], $this->StatusVars)) {
+			if (!$sensor['Enabled'] || in_array($sensor['Sensor'], self::$StatusVars)) {
 				// Sensor disabled or is in StatusVars'
 				continue;
 			}
@@ -272,7 +445,7 @@ class AirQ extends IPSModule
 				if ($value2) {
 					$devID = $this->RegisterVariableFloat(
 						$indentSensorValue . '_dev',
-						$sensor['FriendlyName'] . ' (' . $this->Translate('deviation') . ')'
+						$sensor['FriendlyName'] . ' (' . $this->Translate('deviation') . ')',
 					);
 
 					SetValue($devID, $value2);
@@ -307,33 +480,33 @@ class AirQ extends IPSModule
 					$indentStatus = $sensor['Sensor'] . '_' . $limit['Timespan'] . '_status';
 					$variableID = $this->RegisterVariableFloat(
 						$indentValue,
-						$sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ')',
+						$sensor['FriendlyName'] . ' (' . $this->minuteTimeSpanToFriendlyName($limit['Timespan'] ) . ')',
 						$this->GetProfileNameForSensor($sensor)
 					);
 
 					$statusVariableID = $this->RegisterVariableInteger(
 						$indentStatus,
-						$sensor['FriendlyName'] . ' (' . $limit['Timespan'] . ') - Status',
+						$sensor['FriendlyName'] . ' (' . $this->minuteTimeSpanToFriendlyName($limit['Timespan']) . ') - Status',
 						'SXAIRQ.Status'
 					);
 					$this->levelUp($newSeverity, $indentStatus);
 
 					$t = time();
-					if ($includeAggregated){
+					if ($includeAggregated) {
 						$rollingAverage = @$this->GetAggregatedRollingAverage($SensorValueID, $t - ($limit['Timespan'] * 60), $t);
-					}else{
+					} else {
 						// Use existing value if aggregation is not selected
-						$rollingAverage= [
+						$rollingAverage = [
 							'Avg' => GetValue($variableID)
 						];
 					}
-					
+
 					if ($rollingAverage) {
 						$value = $rollingAverage['Avg'];
-						if ($includeAggregated){
+						if ($includeAggregated) {
 							SetValue($variableID, $value);
 						}
-						
+
 						if (
 							($limit['UpperLimit'] != 0 && $value > $limit['UpperLimit']) ||
 							($limit['LowerLimit'] != 0 && $value < $limit['LowerLimit'])
@@ -346,7 +519,7 @@ class AirQ extends IPSModule
 			}
 		}
 
-		//Transfer final Status ti Variables
+		//Transfer final Status to Variables
 		foreach ($newSeverity as $key => $val) {
 			$statusID = @$this->GetIDForIdent($key);
 			if ($statusID) {
@@ -365,10 +538,10 @@ class AirQ extends IPSModule
 			$arr[$indent] = $level;
 		}
 	}
-	private $StatusVars = ['timestamp', 'Status', 'uptime', 'DeviceID', 'measuretime'];
+
 	private function WriteStatusValues($data)
 	{
-		foreach ($this->StatusVars as $StatusVar) {
+		foreach (self::$StatusVars as $StatusVar) {
 			if (array_key_exists($StatusVar, $data)) {
 				$val = $data[$StatusVar];
 				$valID = @$this->GetIDForIdent($StatusVar);
@@ -551,7 +724,7 @@ class AirQ extends IPSModule
 			$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
 
 			foreach ($data as $key => $val) {
-				if (!in_array($key, $this->StatusVars)) {
+				if (!in_array($key, self::$StatusVars)) {
 					$found = false;
 					foreach ($sensorlist as $sensor) {
 						if ($sensor['Sensor'] == $key) {
@@ -562,7 +735,7 @@ class AirQ extends IPSModule
 					if (!$found) {
 						$sensorlist[] = [
 							"Sensor" => $key,
-							"FriendlyName" => $key,
+							"FriendlyName" => $this->GetFriendlySensorName($key),
 							"Enabled" => false,
 							"Limits" => []
 						];
