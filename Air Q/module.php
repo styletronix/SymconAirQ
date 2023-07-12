@@ -3,7 +3,13 @@
 declare(strict_types=1);
 class AirQ extends IPSModule
 {
-	private static $StatusVars = ['timestamp', 'Status', 'uptime', 'DeviceID', 'measuretime'];
+	private static $StatusVars = [
+		'timestamp',
+		'Status',
+		'uptime',
+		'DeviceID',
+		'measuretime'
+	];
 	private static $defaultSensors = [
 		'no2' => [
 			'friendlyName' => 'Nitrogen dioxide (NO₂)',
@@ -122,6 +128,14 @@ class AirQ extends IPSModule
 		'Status' => [
 			'friendlyName' => 'Status'
 		]
+	];
+	private static $knownTimeSpansMinute = [
+		'Year' => 525600,
+		'Month' => 43200,
+		'Week' => 10080,
+		'Day' => 1440,
+		'Hour' => 60,
+		'Minute' => 1
 	];
 
 	public function Create()
@@ -282,7 +296,7 @@ class AirQ extends IPSModule
 	// 		}
 	// 	}
 	// }
-	private function CreateProfileIfNotExists($name, $digits, $suffix, $min, $max, $type = 2)
+	private function CreateProfileIfNotExists(string $name, int $digits, string $suffix, float $min, float $max, int $type = 2)
 	{
 		$name = 'SXAIRQ.' . $name;
 		if (!IPS_VariableProfileExists($name)) {
@@ -294,7 +308,7 @@ class AirQ extends IPSModule
 
 		return $name;
 	}
-	private function GetFriendlySensorName($sensorID)
+	private function GetFriendlySensorName(int $sensorID)
 	{
 		foreach (self::$defaultSensornames as $key => $val) {
 			if (strtolower($key) == strtolower($sensorID)) {
@@ -350,7 +364,7 @@ class AirQ extends IPSModule
 		}
 
 	}
-	public function Update($includeAggregated = false)
+	public function Update(bool $includeAggregated = false)
 	{
 		$data = $this->GetDataDecoded();
 		if ($data) {
@@ -360,7 +374,7 @@ class AirQ extends IPSModule
 			$this->SetStatus(102);
 		}
 	}
-	private function GetProfileNameForSensor($sensor)
+	private function GetProfileNameForSensor(array $sensor)
 	{
 		$profileName = 'SXAIRQ.' . $sensor['Sensor'];
 		if (IPS_VariableProfileExists($profileName)) {
@@ -369,15 +383,14 @@ class AirQ extends IPSModule
 			return '';
 		}
 	}
-	private static $knownTimeSpansMinute = [
-		'Year' => 525600,
-		'Month' => 43200,
-		'Week' => 10080,
-		'Day' => 1440,
-		'Hour' => 60,
-		'Minute' => 1
-	];
-	private function minuteTimeSpanToFriendlyName($timespan,$divergenceMax = 0.04)
+
+	/**
+	 * Returns a String in the form of "1 Year 1 Week 2 Months 6 Days 8 Minutes" based on the given minutes. Details will be rounded up or down based on the $divergence to get a compact string.
+	 * @param int $timespan Total Minutes to convert to String.
+	 * @param float $divergenceMax Defines how detailed the String should be. 0.00 = Exact Match, 0.05 = 5% Missmatch ok
+	 * @return string Returns a string  in the form of "1 Year 1 Week 2 Months 6 Days 8 Minutes"
+	 */
+	private function minuteTimeSpanToFriendlyName(int $timespan, float $divergenceMax = 0.04)
 	{
 		$timespans = self::$knownTimeSpansMinute;
 		arsort($timespans, SORT_NUMERIC);
@@ -396,7 +409,6 @@ class AirQ extends IPSModule
 			if ($f == 0 && $val / ($total + $timespan) < (1.0 + $divergenceMax)) {
 				$f = 1;
 			}
-
 
 			if ($f == 1) {
 				$result[] = $f . ' ' . $this->Translate($key);
@@ -421,11 +433,11 @@ class AirQ extends IPSModule
 		return implode(' ', $result);
 	}
 
-	private function GetVariableIDForSensor($sensor)
+	private function GetVariableIDForSensor(array $sensor)
 	{
 		return $this->RegisterVariableFloat($sensor['Sensor'], $sensor['FriendlyName'], $this->GetProfileNameForSensor($sensor));
 	}
-	private function WriteSensorDataValues($data, $includeAggregated = false)
+	private function WriteSensorDataValues(array $data, bool $includeAggregated = false)
 	{
 		$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
 		$newSeverity = [];
@@ -490,7 +502,7 @@ class AirQ extends IPSModule
 					$indentStatus = $sensor['Sensor'] . '_' . $limit['Timespan'] . '_status';
 					$variableID = $this->RegisterVariableFloat(
 						$indentValue,
-						$sensor['FriendlyName'] . ' (' . $this->minuteTimeSpanToFriendlyName($limit['Timespan'] ) . ')',
+						$sensor['FriendlyName'] . ' (' . $this->minuteTimeSpanToFriendlyName($limit['Timespan']) . ')',
 						$this->GetProfileNameForSensor($sensor)
 					);
 
@@ -537,7 +549,7 @@ class AirQ extends IPSModule
 			}
 		}
 	}
-	private function levelUp(&$arr, $indent, $level = null)
+	private function levelUp(array &$arr, string $indent, int $level = null)
 	{
 		if (!array_key_exists($indent, $arr) || $level === null) {
 			if ($level === null) {
@@ -549,7 +561,7 @@ class AirQ extends IPSModule
 		}
 	}
 
-	private function WriteStatusValues($data)
+	private function WriteStatusValues(array $data)
 	{
 		foreach (self::$StatusVars as $StatusVar) {
 			if (array_key_exists($StatusVar, $data)) {
@@ -567,7 +579,7 @@ class AirQ extends IPSModule
 			}
 		}
 	}
-	private function getDataFromUrl($url)
+	private function getDataFromUrl(string $url)
 	{
 		$ch = curl_init();
 		$timeout = 5;
@@ -582,7 +594,7 @@ class AirQ extends IPSModule
 	/**
 	 * Returns the first Monday after a given date or date if it already is a monday.
 	 */
-	private function getStartOfWeekDate($timestamp)
+	private function getStartOfWeekDate(int $timestamp)
 	{
 		$date = new \DateTime();
 		$date->setTimestamp((int) $timestamp);
@@ -597,8 +609,13 @@ class AirQ extends IPSModule
 	}
 	/**
 	 * Returns a single Average, Max, Min and Duration from Start to End by using previousely aggregated values for minutes, hours, days and weeks to efficiently calculate a rolling average down to 1 minute resolution.
+	 * @param int $varId Variable ID
+	 * @param mixed $start	Start time as UnixTime 
+	 * @param mixed $end End time as UnixTime
+	 * @param mixed $archiveControlID	Optional: ID of the Archive. If not supplied, the default Archiv will be used.
+	 * @return array Array of Key, Value pairs.
 	 */
-	private function GetAggregatedRollingAverage($varId, $start, $end, $archiveControlID = null)
+	private function GetAggregatedRollingAverage(int $varId, int $start, int $end, int $archiveControlID = null)
 	{
 		if (!$archiveControlID) {
 			$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
@@ -625,7 +642,6 @@ class AirQ extends IPSModule
 			$end = $fullHr;
 			$diff = $end - $start;
 		}
-
 
 		# Get hours to previous midnight
 		if ($diff > 0) {
@@ -756,10 +772,13 @@ class AirQ extends IPSModule
 			$this->UpdateFormField('Sensors', 'values', json_encode($sensorlist));
 		}
 	}
-	/** 
-	 * Decrypt from AES256-CEB  
+	/**
+	 * Decrypt a String with AES256
+	 * @param string $data	The String to decrypt 
+	 * @param string $password	The passwod for decryption
+	 * @return bool|string Returns the decrypted String
 	 */
-	private function decryptString($data, $password)
+	private function decryptString(string $data, string $password)
 	{
 		$password = mb_convert_encoding($password, "UTF-8");
 		$ciphertext = base64_decode($data);
@@ -778,7 +797,12 @@ class AirQ extends IPSModule
 		return openssl_decrypt($ciphertext, "AES-256-CBC", $password, OPENSSL_RAW_DATA, $VI);
 	}
 
-	private function TimerCallback($timer)
+	private function encryptString(string $data, string $password)
+	{
+
+	}
+
+	private function TimerCallback(string $timer)
 	{
 		switch ($timer) {
 			case "update":
@@ -794,7 +818,7 @@ class AirQ extends IPSModule
 		}
 	}
 
-	public function RequestAction($Ident, $Value)
+	public function RequestAction(string $Ident, $Value)
 	{
 		switch ($Ident) {
 			case "TimerCallback":

@@ -84,3 +84,22 @@ Beispiel:
 `SXAIRQ_Update(12345);`
 `SXAIRQ_Update(12345, true);`
 
+
+
+`array SXAIRQ_GetDataDecoded(integer $InstanzID);`
+Liest die aktuellen Daten aus Air-Q und gibt diese als unbearbeitetes Array mit Key, Value daten aus.
+Liefert Null bei Fehler.
+
+Beispiel:
+`$data = SXAIRQ_GetDataDecoded(12345);
+foreach ($data as $key => $val){
+	if (is_array($val)) {
+		$value = $val[0];
+		$errorRate = $val[1];
+	} else {
+		$value = $val;
+		$errorRate = null;
+	}
+
+	print ('Sensor ' . $key . ' - Value: ' . $value . "\n");
+}`
