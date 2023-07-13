@@ -818,7 +818,7 @@ class AirQ extends IPSModule
 		}
 	}
 
-	public function RequestAction(string $Ident, $Value)
+	public function RequestAction($Ident, $Value)
 	{
 		switch ($Ident) {
 			case "TimerCallback":
