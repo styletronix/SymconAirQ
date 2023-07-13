@@ -22,14 +22,14 @@
             "suffix": "seconds"
         },
         {
-            "type": "Label",
-            "caption": "Average calculation is resource consuming even with the internal use of precalculated averages. So don't set this value too low if you have many averages to calculate."
-        },
-        {
             "type": "NumberSpinner",
             "name": "refreshAverage",
             "caption": "Refresh interval average calculation",
             "suffix": "seconds"
+        },
+        {
+            "type": "Label",
+            "caption": "Average calculation is resource consuming even with the internal use of precalculated averages. So don't set this value too low if you have many averages to calculate."
         },
         {
             "type": "Label",

@@ -98,7 +98,8 @@
             "Hours": "Stunden",
             "Minute": "Minute",
             "Minutes": "Minuten",
-            "Sensors": "Sensoren"
+            "Sensors": "Sensoren",
+            "Timespan for Rolling Average": "Zeitspanne für gleitenden Durchschnitt"
         }
     }
 }
