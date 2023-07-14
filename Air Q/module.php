@@ -594,7 +594,7 @@ class AirQ extends IPSModule
 	/**
 	 * Returns the first Monday after a given date or date if it already is a monday.
 	 */
-	private function getStartOfWeekDate($timestamp)
+	private static function getStartOfWeekDate($timestamp)
 	{
 		$date = new \DateTime();
 		$date->setTimestamp((int) $timestamp);
@@ -615,14 +615,19 @@ class AirQ extends IPSModule
 	 * @param mixed $archiveControlID	Optional: ID of the Archive. If not supplied, the default Archiv will be used.
 	 * @return array Array of Key, Value pairs.
 	 */
-	private function GetAggregatedRollingAverage(int $varId, int $start, int $end, int $archiveControlID = null)
+	function GetAggregatedRollingAverage(int $varId, int $start, int $end, int $archiveControlID = null)
 	{
 		if (!$archiveControlID) {
 			$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 		}
 
-		$endtime = $end;
 		$avgs = [];
+
+		### Remove Seconds from end
+		$date = getdate($end);
+		$end = mktime($date['hours'], $date['minutes'], 00, $date['mon'], $date['mday'], $date['year']);
+		$endtime = $end;
+
 		$diff = $end - $start;
 
 		#### Get minutes to previous full hour
@@ -639,7 +644,7 @@ class AirQ extends IPSModule
 			if ($werte) {
 				$avgs = array_merge($avgs, $werte);
 			}
-			$end = $fullHr;
+			$end = $end - $diffToFit;
 			$diff = $end - $start;
 		}
 
@@ -651,6 +656,7 @@ class AirQ extends IPSModule
 			if ($diffToFit > $diff) {
 				$diffToFit = $diff;
 			}
+
 			$diffToFit = floor($diffToFit / 3600) * 3600;
 
 			if ($diffToFit >= 3600) {
@@ -665,7 +671,7 @@ class AirQ extends IPSModule
 
 		#Get days to previous Monday
 		if ($diff > 86400) {
-			$startOfWeek = $this->getStartOfWeekDate($end);
+			$startOfWeek = self::getStartOfWeekDate($end);
 			$diffToFit = $end - $startOfWeek;
 			if ($diffToFit > $diff) {
 				$diffToFit = $diff;
@@ -681,7 +687,8 @@ class AirQ extends IPSModule
 			$end = $start + $diff;
 		}
 
-		// I don't think monthly or yearly aggregated values would make any sense because the most averages needed here are below 1 day or at max. 1 year
+		// I don't think monthly or yearly aggregated values would make any sense because the most averages needed here are below 1 day or at max. 1 year.
+		// Month and Year requires special handling in caloculation because they are not always the same timespan.
 
 		### Now full the rest in Steps of Weeks, Days Hours and Minutes
 		while ($diff > 0) {
@@ -722,10 +729,14 @@ class AirQ extends IPSModule
 		$avgCount = 0;
 		$max = 0;
 		$min = INF;
+		$timespanSum = 0;
 
-		foreach ($avgs as $avg) {
-			$avgSum = $avgSum + ($avg['Avg'] * $avg['Duration'] / 60);
-			$avgCount = $avgCount + (max($avg['Duration'], 1) / 60);
+		foreach ($avgs as &$avg) {
+			$timespanInMinutes = $avg['Duration'] / 60;
+			$avgCount += $timespanInMinutes;
+			$avgSum += $avg['Avg'] * $timespanInMinutes;
+			$timespanSum += $avg['Duration'];
+
 			if ($avg['Max'] > $max) {
 				$max = $avg['Max'];
 			}
@@ -735,14 +746,15 @@ class AirQ extends IPSModule
 		}
 
 		return [
-			"Duration" => $avgCount * 60,
-			"Avg" => $avgSum / max($avgCount, 1),
+			"Duration" => $timespanSum,
+			"Avg" => $avgSum / $avgCount,
 			"Max" => $max,
 			"Min" => $min,
-			"DurationDifference" => ($avgCount * 60) - ($endtime - $start),
+			"DurationDifference" => $timespanSum - ($endtime - $start),
 			"Avgs" => $avgs
 		];
 	}
+
 	public function UpdateSensorList()
 	{
 		$data = $this->GetDataDecoded();
