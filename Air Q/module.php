@@ -650,7 +650,7 @@ class AirQ extends IPSModule
 
 		# Get hours to previous midnight
 		if ($diff > 0) {
-			$date = getdate($end);
+			$date = getdate((int) $end);
 			$fullDay = mktime(00, 00, 00, $date['mon'], $date['mday'], $date['year']);
 			$diffToFit = $end - $fullDay;
 			if ($diffToFit > $diff) {
