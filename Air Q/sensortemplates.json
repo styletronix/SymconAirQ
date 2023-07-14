@@ -1,0 +1,53 @@
+{
+    "WHO": {
+        "Sensors": [
+            {
+                "Sensor": "no2",
+                "Limits": [
+                    {
+                        "Caption": "1",
+                        "Timespan": 0,
+                        "UpperLimit": 0,
+                        "LowerLimit": 0,
+                        "Severity": 0
+                    },
+                    {
+                        "Caption": "2",
+                        "Timespan": 0,
+                        "UpperLimit": 0,
+                        "LowerLimit": 0,
+                        "Severity": 0
+                    }
+                ]
+            },
+            {
+                "Sensor": "co2",
+                "Limits": [
+                    {
+                        "Caption": "1",
+                        "Timespan": 0,
+                        "UpperLimit": 0,
+                        "LowerLimit": 0,
+                        "Severity": 0
+                    },
+                    {
+                        "Caption": "2",
+                        "Timespan": 0,
+                        "UpperLimit": 0,
+                        "LowerLimit": 0,
+                        "Severity": 0
+                    }
+                ]
+            }
+        ]
+    },
+    "EU": {
+        "Sensors": [
+            {
+                "Limits": [
+                    {}
+                ]
+            }
+        ]
+    }
+}
