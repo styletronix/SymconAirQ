@@ -99,7 +99,8 @@
             "Minute": "Minute",
             "Minutes": "Minuten",
             "Sensors": "Sensoren",
-            "Timespan for Rolling Average": "Zeitspanne für gleitenden Durchschnitt"
+            "Timespan for Rolling Average": "Zeitspanne für gleitenden Durchschnitt",
+            "Ignore below 0 values": "Ignoriere Werte unter 0"
         }
     }
 }

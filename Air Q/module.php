@@ -449,7 +449,7 @@ class AirQ extends IPSModule
 			}
 			$statusCreated = false;
 			$newSensorSeverity = 0;
-
+			
 			$indentSensorStatus = $sensor['Sensor'] . '_status';
 			$indentSensorValue = $sensor['Sensor'];
 			if (array_key_exists($indentSensorValue, $data)) {
@@ -461,6 +461,10 @@ class AirQ extends IPSModule
 					$value2 = null;
 				}
 				$currentValue = ($value + ($sensor['Offset'] ?? 0.0)) * ($sensor['Multiplicator'] ?? 1.0);
+				if ($sensor['ignorebelowzero'] && $currentValue < 0.0){
+					$currentValue = 0.0;
+				}
+				
 				$SensorValueID = $this->GetVariableIDForSensor($sensor);
 				SetValue($SensorValueID, $currentValue);
 

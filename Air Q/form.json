@@ -102,6 +102,15 @@
                     }
                 },
                 {
+                    "caption": "Ignore below 0 values",
+                    "name": "ignorebelowzero",
+                    "width": "70px",
+                    "add": true,
+                    "edit": {
+                        "type": "CheckBox"
+                    }
+                },
+                {
                     "caption": "Limits",
                     "name": "Limits",
                     "width": "0px",
