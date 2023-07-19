@@ -210,12 +210,13 @@ In Symcon wird folgendes Webhook erstellt:
 
 Im Skript zum Webhook wird folgender Code hinterlegt:
 ```php
-	$data = json_decode(file_get_contents("php://input"));
+	$data = json_decode(file_get_contents("php://input"), true);
+	
 	foreach (IPS_GetInstanceListByModuleID('{75D0E69C-5431-A726-2ADC-D6EBA6B623E9}') as $id){
-    	if (GetValueString( IPS_GetObjectIDByIdent('DeviceID',$id) ) == $data['DeviceID']){
-        	SXAIRQ_StoreDataFromHTTPPost($id, $data);
-    	}
-	}
+    if (GetValueString( IPS_GetObjectIDByIdent('DeviceID', $id)) == $data['DeviceID']){
+        SXAIRQ_StoreDataFromHTTPPost($id, $data);
+    }
+}
 ```
 
 Und im Air-Q wird mit folgendem Code die Konfiguration zum automatischen senden der Daten aktiviert:
@@ -241,3 +242,17 @@ Im Webhook wird automatisch nach einer Air-Q Instanz mit der richtigen DeviceID 
 Hierdurch kann ein WebHook für mehrere Air-Qs verwendet werden. Es muss jedoch zwingend die Seriennummer in der Variable `DeviceID` hinterlegt sein.
 
 Selbstverständlich kann für den WebHook auch die IP-Magic Adresse des Connect Dienstes verwendet werden. So kann ein externer Air-Q aktiv die Daten an IP-Symcon senden, nachdem er einmalig mit direkter Verbindung konfiguriert wurde.
+
+
+Die Übertragung von Air-Q kann mit folgendem Skript wieder deaktiviert werden:
+```php
+	$InstanceID = 1234; // Die ID der Air-Q Instanz eintragen !!
+
+	$config = [
+  	'httpPOST' => [
+    	'URL' => null
+  	]
+	];
+	
+	SXAIRQ_SetDeviceConfig($InstanceID, $config);
+```
