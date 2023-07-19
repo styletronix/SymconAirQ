@@ -205,10 +205,10 @@ Ruft die Konfiguration des Air-Q ab und liefert diese als Array.
 Wertet die Daten, welche direkt vom Air-Q per Webhook geliefert wurden aus.
 
 #### Beispiel zur WebHook verwendung:
-In Symcon wird folgendes Webhook erstellt:
-`http://meineDomain.de/hook/airq`
+1. In IP-Symcon ein WebHook erstellen: 
+z.B. `http://meineDomain.de/hook/airq`
 
-Im Skript zum Webhook wird folgender Code hinterlegt:
+2. Im Skript zum Webhook folgenden code einfügen:
 ```php
 	$data = json_decode(file_get_contents("php://input"), true);
 	
@@ -219,7 +219,7 @@ Im Skript zum Webhook wird folgender Code hinterlegt:
 }
 ```
 
-Und im Air-Q wird mit folgendem Code die Konfiguration zum automatischen senden der Daten aktiviert:
+3. Im Air-Q mit folgendem Code die Konfiguration zum automatischen senden der Daten aktivieren:
 ```php
 $InstanceID = 1234; // Die ID der Air-Q Instanz eintragen !!
 
@@ -253,6 +253,6 @@ Die Übertragung von Air-Q kann mit folgendem Skript wieder deaktiviert werden:
     	'URL' => null
   	]
 	];
-	
+
 	SXAIRQ_SetDeviceConfig($InstanceID, $config);
 ```
