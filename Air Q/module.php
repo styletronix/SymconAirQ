@@ -374,14 +374,11 @@ class AirQ extends IPSModule
 			return null;
 		}
 
-		$content = [
-			'content' => $this->encryptString(json_encode($data), $pw)
-		];
-		$payload = json_encode($content);
 
 		try {
-			$json = $this->postDataToUrl($url, $payload);
-			$this->SendDebug("postDataToUrl", $json, 0);
+			$request =  'request='. $this->encryptString(json_encode($data), $pw);
+			$this->SendDebug("postDataToUrl", $request, 0);
+			$this->postDataToUrl($url, $request);
 		} catch (Exception $ex) {
 			$this->SetStatus(201);
 			return null;
