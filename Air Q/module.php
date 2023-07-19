@@ -386,25 +386,26 @@ class AirQ extends IPSModule
 
 		try {
 			$result = json_decode($result, true);
-			if (!$result || !$result['content']) {
+			if (!$result ) {
 				$this->SetStatus(202);
 				return null;
 			}
-			$this->SendDebug("json_decode", $result['content'], 0);
-
+			
 		} catch (Exception $ex) {
 			$this->SetStatus(202);
 			return null;
 		}
 
 		try {
-			$result = $this->decryptString($result['content'], $pw);
-			$this->SendDebug("decryptString", $result, 0);
+			if ($result['content']){
+				$result['content'] = $this->decryptString($result['content'], $pw);
+			}
 			if (!$result) {
 				$this->SetStatus(203);
 				return null;
 			}
-			return json_decode($result, true);
+			return $result;
+			//return json_decode($result, true);
 		} catch (Exception $ex) {
 			$this->SetStatus(203);
 			return null;
