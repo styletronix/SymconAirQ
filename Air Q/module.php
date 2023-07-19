@@ -375,7 +375,7 @@ class AirQ extends IPSModule
 		}
 
 		$content = [
-			'content' => encryptString( json_encode($data))
+			'content' => $this->encryptString(json_encode($data))
 		];
 		$payload = json_encode($content);
 
@@ -652,7 +652,8 @@ class AirQ extends IPSModule
 
 		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 			'Content-type: application/x-www-form-urlencoded'
-		));
+		)
+		);
 		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -827,10 +828,12 @@ class AirQ extends IPSModule
 			"Avgs" => $avgs
 		];
 	}
-	public function GetDeviceConfig(){
+	public function GetDeviceConfig()
+	{
 		return $this->GetDataDecoded('/config');
 	}
-	public function SetDeviceConfig(array $data){
+	public function SetDeviceConfig(array $data)
+	{
 		$this->SendDataEncoded('/config', $data);
 	}
 
