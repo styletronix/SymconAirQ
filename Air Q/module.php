@@ -831,7 +831,7 @@ class AirQ extends IPSModule
 	}
 	public function SetDeviceConfig(array $data)
 	{
-		$this->SendDataEncoded('/config', $data);
+		return $this->SendDataEncoded('/config', $data);
 	}
 
 	public function UpdateSensorList()
