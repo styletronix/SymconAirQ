@@ -375,7 +375,7 @@ class AirQ extends IPSModule
 		}
 
 		$content = [
-			'content' => $this->encryptString(json_encode($data))
+			'content' => $this->encryptString(json_encode($data), $pw)
 		];
 		$payload = json_encode($content);
 
