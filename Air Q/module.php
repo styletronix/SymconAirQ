@@ -319,10 +319,10 @@ class AirQ extends IPSModule
 		}
 		return $this->Translate($sensorID);
 	}
-	public function GetDataDecoded()
+	public function GetDataDecoded($path = '/data')
 	{
 		$pw = $this->ReadPropertyString('password');
-		$url = trim($this->ReadPropertyString('url'), '\\') . '/data';
+		$url = trim($this->ReadPropertyString('url'), '\\') . $path;
 
 		if (!$pw || !$url) {
 			$this->SetStatus(204);
@@ -358,6 +358,56 @@ class AirQ extends IPSModule
 				return null;
 			}
 			return json_decode($data, true);
+		} catch (Exception $ex) {
+			$this->SetStatus(203);
+			return null;
+		}
+
+	}
+	public function SendDataEncoded($path, $data)
+	{
+		$pw = $this->ReadPropertyString('password');
+		$url = trim($this->ReadPropertyString('url'), '\\') . $path;
+
+		if (!$pw || !$url) {
+			$this->SetStatus(204);
+			return null;
+		}
+
+		$content = [
+			'content' => encryptString( json_encode($data))
+		];
+		$payload = json_encode($content);
+
+		try {
+			$json = $this->postDataToUrl($url, $payload);
+			$this->SendDebug("postDataToUrl", $json, 0);
+		} catch (Exception $ex) {
+			$this->SetStatus(201);
+			return null;
+		}
+
+		try {
+			$result = json_decode($json, true);
+			if (!$result || !$result['content']) {
+				$this->SetStatus(202);
+				return null;
+			}
+			$this->SendDebug("json_decode", $result['content'], 0);
+
+		} catch (Exception $ex) {
+			$this->SetStatus(202);
+			return null;
+		}
+
+		try {
+			$result = $this->decryptString($result['content'], $pw);
+			$this->SendDebug("decryptString", $result, 0);
+			if (!$result) {
+				$this->SetStatus(203);
+				return null;
+			}
+			return json_decode($result, true);
 		} catch (Exception $ex) {
 			$this->SetStatus(203);
 			return null;
@@ -449,7 +499,7 @@ class AirQ extends IPSModule
 			}
 			$statusCreated = false;
 			$newSensorSeverity = 0;
-			
+
 			$indentSensorStatus = $sensor['Sensor'] . '_status';
 			$indentSensorValue = $sensor['Sensor'];
 			if (array_key_exists($indentSensorValue, $data)) {
@@ -461,10 +511,10 @@ class AirQ extends IPSModule
 					$value2 = null;
 				}
 				$currentValue = ($value + ($sensor['Offset'] ?? 0.0)) * ($sensor['Multiplicator'] ?? 1.0);
-				if ($sensor['ignorebelowzero'] && $currentValue < 0.0){
+				if ($sensor['ignorebelowzero'] && $currentValue < 0.0) {
 					$currentValue = 0.0;
 				}
-				
+
 				$SensorValueID = $this->GetVariableIDForSensor($sensor);
 				SetValue($SensorValueID, $currentValue);
 
@@ -590,11 +640,30 @@ class AirQ extends IPSModule
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-		curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; MSIE 7.0; Windows NT 6.0; en-US)");
+		curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; MSIE 7.0; Windows NT 6.0; de-DE)");
 		$data = curl_exec($ch);
 		curl_close($ch);
 		return $data;
 	}
+	private function postDataToUrl(string $url, $data)
+	{
+		$ch = curl_init();
+		$timeout = 5;
+
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			'Content-type: application/x-www-form-urlencoded'
+		));
+		curl_setopt($ch, CURLOPT_POST, true);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+		curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+		curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; MSIE 7.0; Windows NT 6.0; de-DE)");
+		$result = curl_exec($ch);
+		curl_close($ch);
+		return $result;
+	}
+
 	/**
 	 * Returns the first Monday after a given date or date if it already is a monday.
 	 */
@@ -619,7 +688,7 @@ class AirQ extends IPSModule
 	 * @param mixed $archiveControlID	Optional: ID of the Archive. If not supplied, the default Archiv will be used.
 	 * @return array Array of Key, Value pairs.
 	 */
-	function GetAggregatedRollingAverage(int $varId, int $start, int $end, int $archiveControlID = null)
+	public function GetAggregatedRollingAverage(int $varId, int $start, int $end, int $archiveControlID = null)
 	{
 		if (!$archiveControlID) {
 			$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
@@ -758,6 +827,12 @@ class AirQ extends IPSModule
 			"Avgs" => $avgs
 		];
 	}
+	public function GetDeviceConfig(){
+		return $this->GetDataDecoded('/config');
+	}
+	public function SetDeviceConfig(array $data){
+		$this->SendDataEncoded('/config', $data);
+	}
 
 	public function UpdateSensorList()
 	{
@@ -799,7 +874,7 @@ class AirQ extends IPSModule
 		$password = mb_convert_encoding($password, "UTF-8");
 		$ciphertext = base64_decode($data);
 
-		$VI = substr($ciphertext, 0, 16);
+		$iv = substr($ciphertext, 0, 16);
 		$ciphertext = substr($ciphertext, 16);
 
 		if (strlen($password) < 32) {
@@ -810,11 +885,24 @@ class AirQ extends IPSModule
 			$password = substr($password, 0, 32);
 		}
 
-		return openssl_decrypt($ciphertext, "AES-256-CBC", $password, OPENSSL_RAW_DATA, $VI);
+		return openssl_decrypt($ciphertext, "AES-256-CBC", $password, OPENSSL_RAW_DATA, $iv);
 	}
 
 	private function encryptString(string $data, string $password)
 	{
+		$iv = openssl_random_pseudo_bytes(16);
+
+		$password = mb_convert_encoding($password, "UTF-8");
+		if (strlen($password) < 32) {
+			for ($i = strlen($password); $i < 32; $i++) {
+				$password = $password . '0';
+			}
+		} elseif (count($password) > 32) {
+			$password = substr($password, 0, 32);
+		}
+
+		$raw = openssl_encrypt($data, "AES-256-CBC", $password, OPENSSL_RAW_DATA, $iv);
+		return base64_encode($iv . $raw);
 
 	}
 
