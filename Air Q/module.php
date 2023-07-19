@@ -834,6 +834,12 @@ class AirQ extends IPSModule
 	{
 		return $this->SendDataEncoded('/config', $data);
 	}
+	public function StoreDataFromHTTPPost($data){
+		if ($data['DeviceID'] == GetValueString($this->GetIDForIdent('DeviceID'))) {
+			$this->WriteSensorDataValues($data);
+			$this->WriteStatusValues($data);
+		}
+	}
 
 	public function UpdateSensorList()
 	{

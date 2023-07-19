@@ -15,6 +15,10 @@ Dieses Modul verbindet sich mit einem über HTTP erreichbaren Air-Q und liest de
 - Zyklisches auslesen aller Messwerte des Air-Q.
 - Bildung von gleitenden Mittelwerten für verschiedene Zeiträume wie für Auswertung der Warnschwellen nach WHO oder EU Richtlinien notwendig.
 
+#### Neu ab Version 1.2
+- Lesen und schreiben der Air-Q Konfiguration (Science Version).
+- Verwendung eines WebHook um Daten von externen Air-Qs empfangen zu können. (Siehe [PHP-Befehlsreferenz](#7-php-befehlsreferenz))
+
 ## 2. Voraussetzungen
 
 - IP-Symcon ab Version 5.5
@@ -115,7 +119,7 @@ Das Modul besitzt keine spezielle WebFront funktion.
 ## 7. PHP-Befehlsreferenz
 
 
-### `bool SXAIRQ_TestConnection(integer $InstanzID);`
+### `bool SXAIRQ_TestConnection(int $InstanzID);`
 Prüft, ob der Air-Q erreichbar ist und die Daten korrekt ausgelesen werden können.
 Der Air-Q muss vor der Verwendung dieser Funktion vollständig konfiguriert und erreichbar sein.
 
@@ -127,7 +131,7 @@ Zusätzlich sind Informationen im DEBUG Fenster zu finden.
 $success = SXAIRQ_TestConnection(12345);
 ```
 
-### `SXAIRQ_Update(integer $InstanzID, boolean $includeAggregated = false);`
+### `SXAIRQ_Update(int $InstanzID, boolean $includeAggregated = false);`
 Aktualisiert die Daten des Air-Q sofort.
 Der Air-Q muss vor der Verwendung dieser Funktion vollständig konfiguriert und erreichbar sein.
 Bei $includeAggregated = true werden zusätzlich die gleitenden Durchschnittswerte berechnet. Wenn false, dann werden die zuletzt berechneten Werte als Referenz genommen.
@@ -137,7 +141,7 @@ Bei $includeAggregated = true werden zusätzlich die gleitenden Durchschnittswer
 SXAIRQ_Update(12345, true);
 ```
 
-### `SXAIRQ_GetDataDecoded(integer $InstanzID);`
+### `SXAIRQ_GetDataDecoded(int $InstanzID);`
 
 Liest die aktuellen Daten aus Air-Q und gibt diese als unbearbeitetes Array mit Key, Value daten aus.
 Liefert Null bei Fehler.
@@ -158,3 +162,82 @@ foreach ($data as $key => $val){
 	print ('Sensor ' . $key . ' - Value: ' . $value . "\n");
 }
 ```
+
+### `SXAIRQ_SetDeviceConfig(int $InstanceID, array $data)`
+
+Setzt eine oder mehrere Einstellungen im Air-Q. Siehe hierzu das JSOn Format für die Geräteeisntellung unter https://docs.air-q.com/.
+
+Liefert ein Array mit 'id' und 'content' zurück, falls der Aufruf erfolgreich war. Sonst ist der Rückgabewert null.
+
+#### Beispiel:
+```php
+	// Air-Q neu starten:
+	$result = SXAIRQ_SetDeviceConfig(12345, ['reset' => true]);
+	print_r ($result);
+}
+```
+
+```php
+	// Zusätzliches WLAN eintragen.:
+	$result = SXAIRQ_SetDeviceConfig(12345,
+		[
+  			'WiFissid' => 'Ihre WLAN-SSID',
+  			'WiFipass' => 'Ihr WLAN-Key',
+			'reset' => true
+		]);
+	print_r ($result);
+
+```
+
+### `SXAIRQ_GetDeviceConfig(int $InstanceID)`
+
+Ruft die Konfiguration des Air-Q ab und liefert diese als Array.
+
+#### Beispiel:
+```php
+	$result = SXAIRQ_GetDeviceConfig(12345);
+	print_r ($result);
+
+```
+
+### `SXAIRQ_StoreDataFromHTTPPost(int $InstanceID, $data)`
+
+Wertet die Daten, welche direkt vom Air-Q per Webhook geliefert wurden aus.
+
+#### Beispiel zur WebHook verwendung:
+In Symcon wird folgendes Webhook erstellt:
+`http://meineDomain.de/hook/airq`
+
+Im Skript zum Webhook wird folgender Code hinterlegt:
+```php
+	$data = json_decode(file_get_contents("php://input"));
+	foreach (IPS_GetInstanceListByModuleID('{75D0E69C-5431-A726-2ADC-D6EBA6B623E9}') as $id){
+    	if (GetValueString( IPS_GetObjectIDByIdent('DeviceID',$id) ) == $data['DeviceID']){
+        	SXAIRQ_StoreDataFromHTTPPost($id, $data);
+    	}
+	}
+```
+
+Und im Air-Q wird mit folgendem Code die Konfiguration zum automatischen senden der Daten aktiviert:
+```php
+$InstanceID = 1234; // Die ID der Air-Q Instanz eintragen !!
+
+$config = [
+  'httpPOST' => [
+    'URL' => 'http://meineDomain.de/hook/airq',
+    'Headers' => ['Content-Type' => 'application/json'],
+    'averages' => true,
+    'delay' => 30
+  ]
+];
+
+print_r(SXAIRQ_SetDeviceConfig($InstanceID, $config));
+```
+
+
+Als Ergebnis wird der Air-Q alle 30 Sekunden die Durchschnittswerte an IP-Symcon senden.
+Im Webhook wird automatisch nach einer Air-Q Instanz mit der richtigen DeviceID gesucht und dort die Daten aktualisiert.
+
+Hierdurch kann ein WebHook für mehrere Air-Qs verwendet werden. Es muss jedoch zwingend die Seriennummer in der Variable `DeviceID` hinterlegt sein.
+
+Selbstverständlich kann für den WebHook auch die IP-Magic Adresse des Connect Dienstes verwendet werden. So kann ein externer Air-Q aktiv die Daten an IP-Symcon senden, nachdem er einmalig mit direkter Verbindung konfiguriert wurde.
