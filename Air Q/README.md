@@ -213,9 +213,14 @@ Ruft die Konfiguration des Air-Q ab und aktualisiert die Einheiten und Anzahl an
 	SXAIRQ_UpdateSensorProfiles(12345);
 ```
 
-### `SXAIRQ_StoreDataFromHTTPPost(int $InstanceID, $data)`
+### `SXAIRQ_StoreDataFromHTTPPost(int $InstanceID, $data, bool $aggregate = true )`
 
 Wertet die Daten, welche direkt vom Air-Q per Webhook geliefert wurden aus.
+
+Bei verwendung des WebHooks sollten beide Aktualisierungsintervalle auf 0 (deaktiviert) gesetzt werden. Die Berechnung des Durchschnitts erfolgt automatisch beim Empfang von Daten über den WebHook, es sei denn `$aggregate` wurde explizit auf `false` gesetzt.
+
+#### Hinweis:
+Die DeviceID in der AirQ Instanz und der gelieferten Daten müssen übereinstimmen. Der Befehl bricht sonst mit einer Fehlermeldung ab um das vermischen von Daten von verschiedenen Geräten zu verhindern.
 
 #### Beispiel zur WebHook verwendung:
 1. In IP-Symcon ein WebHook erstellen: 
@@ -241,7 +246,7 @@ $config = [
     'URL' => 'http://meineDomain.de/hook/airq',
     'Headers' => ['Content-Type' => 'application/json'],
     'averages' => true,
-    'delay' => 30
+    'delay' => 120
   ]
 ];
 
@@ -249,7 +254,7 @@ print_r(SXAIRQ_SetDeviceConfig($InstanceID, $config));
 ```
 
 
-Als Ergebnis wird der Air-Q alle 30 Sekunden die Durchschnittswerte an IP-Symcon senden.
+Als Ergebnis wird der Air-Q alle 120 Sekunden die Durchschnittswerte an IP-Symcon senden.
 Im Webhook wird automatisch nach einer Air-Q Instanz mit der richtigen DeviceID gesucht und dort die Daten aktualisiert.
 
 Hierdurch kann ein WebHook für mehrere Air-Qs verwendet werden. Es muss jedoch zwingend die Seriennummer in der Variable `DeviceID` hinterlegt sein.

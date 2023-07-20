@@ -904,10 +904,10 @@ class AirQ extends IPSModule
 	{
 		return $this->SendDataEncoded('/config', $data);
 	}
-	public function StoreDataFromHTTPPost(array $data)
+	public function StoreDataFromHTTPPost(array $data, bool $aggregate = true)
 	{
 		if ($data['DeviceID'] == GetValueString($this->GetIDForIdent('DeviceID'))) {
-			$this->WriteSensorDataValues($data);
+			$this->WriteSensorDataValues($data, $aggregate);
 			$this->WriteStatusValues($data);
 		}else{
 			throw new Exception($this->Translate('DeviceID from HTTP Post and AirQ Instance does not match!'));

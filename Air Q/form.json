@@ -16,6 +16,10 @@
             "caption": "Password"
         },
         {
+            "type": "Label",
+            "caption": "If you are using a WebHook for receiving sensor data, you should set both refresh intervals to 0 (disabled). Average calculation is performed each time, data is received by the WebHook."
+        },
+        {
             "type": "NumberSpinner",
             "name": "refresh",
             "caption": "Refresh interval",
