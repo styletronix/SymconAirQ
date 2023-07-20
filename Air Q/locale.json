@@ -100,7 +100,9 @@
             "Minutes": "Minuten",
             "Sensors": "Sensoren",
             "Timespan for Rolling Average": "Zeitspanne für gleitenden Durchschnitt",
-            "Ignore below 0 values": "Ignoriere Werte unter 0"
+            "Ignore below 0 values": "Ignoriere Werte unter 0",
+            "DeviceID from HTTP Post and AirQ Instance does not match!": "DeviceID aus den HTTP Daten und der AirQ Instanz stimmen nicht überein.",
+            "Refresh Sensor variable profiles": "Aktualisiere Sensor Variablenprofile"
         }
     }
 }

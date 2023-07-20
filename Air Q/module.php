@@ -184,12 +184,13 @@ class AirQ extends IPSModule
 		$this->RegisterPropertyInteger("refreshAverage", 20);
 		$this->RegisterPropertyString('Sensors', '');
 
+		$this->RegisterAttributeString('DeviceConfig', '');
+
 		$this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
 		$this->RegisterVariableString('DeviceID', $this->Translate('DeviceID'));
 		$this->RegisterVariableString('Status', $this->Translate('Status'));
 		$this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
 		$this->RegisterVariableInteger('measuretime', $this->Translate('Measuretime'), '');
-
 
 		$this->RegisterTimer("update", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "update");');
 		$this->RegisterTimer("updateAverage", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refreshAverage') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "updateAverage");');
@@ -308,6 +309,61 @@ class AirQ extends IPSModule
 
 		return $name;
 	}
+	public function UpdateSensorProfiles()
+	{
+		$data = $this->GetDeviceConfig();
+		$sensors = $data['sensors'];
+
+		foreach ($sensors as $sensor) {
+			$info = $this->GetSensorInfoBySensorID($data, $sensor);
+			if ($info) {
+				$unit = $info['Unit'];
+				if ($unit && is_array($unit)) { $unit = $unit[$sensor]; }
+
+				$digits = key_exists('Round Digits',$info) ? $info['Round Digits'] : $info['RoundDigits'];
+				if ($digits && is_array($digits)) { $digits = $digits[$unit]; }
+				if (!$digits){ $digits = 0; }
+				$digits = (int) $digits;
+
+
+				$profileName = 'SXAIRQ.' . $sensor;
+				if (!IPS_VariableProfileExists($profileName)) {
+					IPS_CreateVariableProfile($profileName, 2);
+				}
+				if ($digits >= 0) {
+					IPS_SetVariableProfileDigits($profileName, $digits);
+				}
+				if ($unit){
+					$unit = str_replace('^3', '³', $unit);
+					$unit = str_replace('^2', '²', $unit);
+					$unit = str_replace('deg', '°', $unit);
+					$unit = str_replace('u', 'µ', $unit);
+
+					if ($unit == '%'){
+						IPS_SetVariableProfileValues($profileName, 0, 100, 1);
+					}
+					IPS_SetVariableProfileText($profileName, '', ' ' . $unit);
+				}
+			}
+		}
+	}
+	private function GetSensorInfoBySensorID($config, $sensorid)
+	{
+		foreach ($config['SensorInfo'] as $key => $val) {
+			if (is_array($val['Value Name'])) {
+				foreach ($val['Value Name'] as $id) {
+					if ($id == $sensorid) {
+						return $val;
+					}
+				}
+			} else {
+				if ($val['Value Name'] == $sensorid) {
+					return $val;
+				}
+			}
+		}
+		return null;
+	}
 	private function GetFriendlySensorName(int $sensorID)
 	{
 		foreach (self::$defaultSensornames as $key => $val) {
@@ -319,7 +375,7 @@ class AirQ extends IPSModule
 		}
 		return $this->Translate($sensorID);
 	}
-	public function GetDataDecoded($path = '/data')
+	public function GetDataDecoded(string $path = '/data')
 	{
 		$pw = $this->ReadPropertyString('password');
 		$url = trim($this->ReadPropertyString('url'), '\\') . $path;
@@ -364,7 +420,7 @@ class AirQ extends IPSModule
 		}
 
 	}
-	public function SendDataEncoded($path, $data)
+	public function SendDataEncoded(string $path, array $data)
 	{
 		$pw = $this->ReadPropertyString('password');
 		$url = trim($this->ReadPropertyString('url'), '\\') . $path;
@@ -376,9 +432,9 @@ class AirQ extends IPSModule
 
 
 		try {
-			$request =  'request='. $this->encryptString(json_encode($data), $pw);
+			$request = 'request=' . $this->encryptString(json_encode($data), $pw);
 			$this->SendDebug("postDataToUrl", $request, 0);
-			$result =	$this->postDataToUrl($url, $request);
+			$result = $this->postDataToUrl($url, $request);
 		} catch (Exception $ex) {
 			$this->SetStatus(201);
 			return null;
@@ -386,18 +442,18 @@ class AirQ extends IPSModule
 
 		try {
 			$result = json_decode($result, true);
-			if (!$result ) {
+			if (!$result) {
 				$this->SetStatus(202);
 				return null;
 			}
-			
+
 		} catch (Exception $ex) {
 			$this->SetStatus(202);
 			return null;
 		}
 
 		try {
-			if ($result['content']){
+			if ($result['content']) {
 				$result['content'] = $this->decryptString($result['content'], $pw);
 			}
 			if (!$result) {
@@ -612,7 +668,6 @@ class AirQ extends IPSModule
 			$arr[$indent] = $level;
 		}
 	}
-
 	private function WriteStatusValues(array $data)
 	{
 		foreach (self::$StatusVars as $StatusVar) {
@@ -648,9 +703,12 @@ class AirQ extends IPSModule
 		$ch = curl_init();
 		$timeout = 5;
 
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-			'Content-type: application/x-www-form-urlencoded'
-		)
+		curl_setopt(
+			$ch,
+			CURLOPT_HTTPHEADER,
+			array(
+				'Content-type: application/x-www-form-urlencoded'
+			)
 		);
 		curl_setopt($ch, CURLOPT_POST, true);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
@@ -828,16 +886,31 @@ class AirQ extends IPSModule
 	}
 	public function GetDeviceConfig()
 	{
-		return $this->GetDataDecoded('/config');
+		$config = $this->GetDataDecoded('/config');
+		if ($config){
+			$this->WriteAttributeString("DeviceConfig", json_encode($config));
+		}
+		return $config;
+	}
+	public function GetDeviceConfigCached()
+	{
+		$config = $this->ReadAttributeString("DeviceConfig");
+		if ($config) {
+			return json_decode($config, true);
+		}
+		return null;
 	}
 	public function SetDeviceConfig(array $data)
 	{
 		return $this->SendDataEncoded('/config', $data);
 	}
-	public function StoreDataFromHTTPPost($data){
+	public function StoreDataFromHTTPPost(array $data)
+	{
 		if ($data['DeviceID'] == GetValueString($this->GetIDForIdent('DeviceID'))) {
 			$this->WriteSensorDataValues($data);
 			$this->WriteStatusValues($data);
+		}else{
+			throw new Exception($this->Translate('DeviceID from HTTP Post and AirQ Instance does not match!'));
 		}
 	}
 

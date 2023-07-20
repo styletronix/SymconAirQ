@@ -192,12 +192,25 @@ Liefert ein Array mit 'id' und 'content' zurück, falls der Aufruf erfolgreich w
 ### `SXAIRQ_GetDeviceConfig(int $InstanceID)`
 
 Ruft die Konfiguration des Air-Q ab und liefert diese als Array.
+Zusätzlich wird die aktuelle Konfiguration in dem Attribut 'DeviceConfig' gespeichert.
 
 #### Beispiel:
 ```php
 	$result = SXAIRQ_GetDeviceConfig(12345);
 	print_r ($result);
+```
 
+### `SXAIRQ_GetDeviceConfigCached(int $InstanceID)`
+
+Liefert die gleichen Daten wie `SXAIRQ_GetDeviceConfig(int $InstanceID)`, jedoch aus dem Zwischenspeicher, sofern verfügbar. Liefert `null` wenn keine Daten vorhanden sind.
+Der Zwischenspeicher wird automatisch mit aufrufen von `SXAIRQ_GetDeviceConfig(int $InstanceID)` aktualisiert.
+
+### `SXAIRQ_UpdateSensorProfiles(int $InstanceID)`
+
+Ruft die Konfiguration des Air-Q ab und aktualisiert die Einheiten und Anzahl an Dezimalstellen der Variablenprofile.
+
+```php
+	SXAIRQ_UpdateSensorProfiles(12345);
 ```
 
 ### `SXAIRQ_StoreDataFromHTTPPost(int $InstanceID, $data)`

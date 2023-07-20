@@ -201,13 +201,18 @@
     "actions": [
         {
             "type": "Button",
+            "caption": "Test connection",
+            "onClick": "SXAIRQ_TestConnection($id);"
+        },
+        {
+            "type": "Button",
             "caption": "Refresh Sensorlist",
             "onClick": "SXAIRQ_UpdateSensorList($id);"
         },
         {
             "type": "Button",
-            "caption": "Test connection",
-            "onClick": "SXAIRQ_TestConnection($id);"
+            "caption": "Refresh Sensor variable profiles",
+            "onClick": "SXAIRQ_UpdateSensorProfiles($id);"
         }
     ],
     "status": [
