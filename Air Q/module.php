@@ -389,8 +389,9 @@ class AirQ extends IPSModule
 				'delay' => $this->ReadPropertyInteger('WebHookInterval')
 			]
 		];
-
-		return $this->SetDeviceConfig($config);
+		$result = $this->SetDeviceConfig($config);
+		print($result);
+		return $result;
 	}
 	public function RemoveWebHookConfig()
 	{
@@ -400,7 +401,9 @@ class AirQ extends IPSModule
 			]
 		];
 
-		return $this->SetDeviceConfig($config);
+		$result = $this->SetDeviceConfig($config);
+		print($result);
+		return $result;
 	}
 	private function GetFriendlySensorName(int $sensorID)
 	{
