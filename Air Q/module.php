@@ -995,10 +995,12 @@ class AirQ extends IPSModule
 
 		$encrypted = $this->getDataFromUrl($url);
 		$this->SendDebug("GetFileContent", 'encrypted: ' . $encrypted, 0);
-
+		
 		$result = [];
 		foreach(explode("\n",$encrypted) as $line){
-			$result [] = $this->decryptString($line, $pw);
+			if ($line){
+				$result[] = $this->decryptString($line, $pw);
+			}
 		}
 
 
