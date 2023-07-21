@@ -11,11 +11,11 @@
             "caption": "Mode",
             "options": [
                 {
-                    "caption": "Mode 1 - Symcon request data from AirQ (every AirQ version - fast - internal connnection required",
+                    "caption": "Mode 1 - HTTP Request",
                     "value": 0
                 },
                 {
-                    "caption": "Mode 2 - AirQ sends data to WebHook (Science version only - slow - connect service usable)",
+                    "caption": "Mode 2 - WebHook (Science version only)",
                     "value": 1
                 }
             ]

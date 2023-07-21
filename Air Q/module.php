@@ -389,7 +389,7 @@ declare(strict_types=1);class AirQ extends IPSModule
 			]
 		];
 		$result = $this->SetDeviceConfig($config);
-		print($result);
+		print_r($result);
 		return $result;
 	}
 	public function RemoveWebHookConfig()
@@ -401,7 +401,7 @@ declare(strict_types=1);class AirQ extends IPSModule
 		];
 
 		$result = $this->SetDeviceConfig($config);
-		print($result);
+		print_r($result);
 		return $result;
 	}
 	private function GetFriendlySensorName(int $sensorID)
