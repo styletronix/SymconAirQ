@@ -974,11 +974,35 @@ class AirQ extends IPSModule
 
 		$encrypted = $this->getDataFromUrl($url);
 		$this->SendDebug("GetFileList", 'encrypted: ' . $encrypted, 0);
-		
+		if ($encrypted = '{}') {
+			return null;
+		}
+
 		$decrypted = $this->decryptString($encrypted, $pw);
 		$this->SendDebug("GetFileList", 'decrypted: ' . $decrypted, 0);
 
 		return json_decode($decrypted, true);
+	}
+	public function GetFileContent($filepath){
+		$pw = $this->ReadPropertyString('password');
+		$url = trim($this->ReadPropertyString('url'), '/');
+		if (!$pw || !$url) {
+			return null;
+		}
+
+		$url = $url . '/file?request=' . $this->encryptString($filepath, $pw);
+		$this->SendDebug("GetFileList", 'URL: ' . $url, 0);
+
+		$encrypted = $this->getDataFromUrl($url);
+		$this->SendDebug("GetFileContent", 'encrypted: ' . $encrypted, 0);
+
+		$result = [];
+		foreach(explode("\n",$encrypted) as $line){
+			$result [] = $this->decryptString($line, $pw);
+		}
+
+
+		return $result;
 	}
 
 	public function UpdateSensorList()
