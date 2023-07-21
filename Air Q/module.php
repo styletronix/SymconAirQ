@@ -974,7 +974,7 @@ class AirQ extends IPSModule
 
 		$encrypted = $this->getDataFromUrl($url);
 		$this->SendDebug("GetFileList", 'encrypted: ' . $encrypted, 0);
-		if ($encrypted = '{}') {
+		if ($encrypted == '{}') {
 			return null;
 		}
 
