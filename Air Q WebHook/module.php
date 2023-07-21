@@ -62,6 +62,8 @@ class AirQWebHook extends IPSModule
         $this->SendDebug('Received', 'Data: ' . $rawData, 0);
 
         $data = @json_decode($rawData, true);
+        $this->SendDebug('Parsed', 'Data: ' . print_r($data,true), 0);
+      
         if ($data) {
             if (!key_exists('DeviceID', $data)) {
                 $msg = 'DeviceID not supplied';
