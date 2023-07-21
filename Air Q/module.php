@@ -138,6 +138,13 @@ class AirQ extends IPSModule
 		'Minute' => 1
 	];
 
+	
+
+	public function __construct($InstanceID)
+	{
+		parent::__construct($InstanceID);
+	}
+
 	public function Create()
 	{
 		parent::Create();
@@ -261,42 +268,7 @@ class AirQ extends IPSModule
 
 		$this->Update(true);
 	}
-	// private function parseData($data)
-	// {
-	// 	foreach ($data as $key => $value) {
-	// 		$valID = @$this->GetIDForIdent($key);
-	// 		if (!$valID) {
-	// 			continue;
-	// 		}
-
-	// 		if (is_array($value)) {
-	// 			SetValue($valID, $value[0]);
-
-	// 			for ($i = 1; $i < count($value); $i++) {
-	// 				$indent = 'value_' . $i;
-	// 				$val2ID = @IPS_GetObjectIDByIdent($indent, $valID);
-	// 				if ($val2ID) {
-	// 					SetValue($val2ID, $value[$i]);
-	// 				}
-	// 			}
-	// 		} else {
-	// 			switch ($key) {
-	// 				case 'timestamp':
-	// 				case 'measuretime':
-	// 					SetValue($valID, $value / 1000);
-	// 					break;
-
-	// 				case 'performance':
-	// 				case 'health':
-	// 					SetValue($valID, $value / 10);
-	// 					break;
-
-	// 				default:
-	// 					SetValue($valID, $value);
-	// 			}
-	// 		}
-	// 	}
-	// }
+	
 	private function CreateProfileIfNotExists(string $name, int $digits, string $suffix, float $min, float $max, int $type = 2)
 	{
 		$name = 'SXAIRQ.' . $name;
@@ -1014,3 +986,4 @@ class AirQ extends IPSModule
 		}
 	}
 }
+?>
