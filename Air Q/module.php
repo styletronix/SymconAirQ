@@ -1,7 +1,6 @@
 <?php
 
-declare(strict_types=1);
-class AirQ extends IPSModule
+declare(strict_types=1);class AirQ extends IPSModule
 {
 	private static $StatusVars = [
 		'timestamp',
@@ -945,13 +944,14 @@ class AirQ extends IPSModule
 	{
 		return $this->SendDataEncoded('/config', $data);
 	}
-	public function StoreDataFromHTTPPost(array $data, bool $aggregate = true)
+	public function StoreDataFromHTTPPost(array $data, bool $aggregate)
 	{
 		if ($data['DeviceID'] == GetValueString($this->GetIDForIdent('DeviceID'))) {
 			$this->WriteSensorDataValues($data, $aggregate);
 			$this->WriteStatusValues($data);
+			return true;
 		} else {
-			throw new Exception($this->Translate('DeviceID from HTTP Post and AirQ Instance does not match!'));
+			return false;
 		}
 	}
 
