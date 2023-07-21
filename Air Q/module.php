@@ -1003,6 +1003,12 @@ class AirQ extends IPSModule
 			}
 		}
 
+		foreach($result as &$line){
+			$parsed = @json_decode($line, true);
+			if ($parsed){
+				$line = $parsed;
+			}
+		}
 
 		return $result;
 	}
