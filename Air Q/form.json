@@ -6,30 +6,68 @@
             "caption": "Enable"
         },
         {
-            "type": "ValidationTextBox",
-            "name": "url",
-            "caption": "URL to Air-Q"
+            "type": "Select",
+            "name": "mode",
+            "caption": "Mode",
+            "options": [
+                {
+                    "caption": "Mode 1 - Symcon request data from AirQ (every AirQ version - fast - internal connnection required",
+                    "value": 0
+                },
+                {
+                    "caption": "Mode 2 - AirQ sends data to WebHook (Science version only - slow - connect service usable)",
+                    "value": 1
+                }
+            ]
         },
         {
-            "type": "PasswordTextBox",
-            "name": "password",
-            "caption": "Password"
+            "type": "ExpansionPanel",
+            "caption": "Direct connection to AirQ (for Mode 1 and configuration)",
+            "items": [
+                {
+                    "type": "ValidationTextBox",
+                    "name": "url",
+                    "caption": "URL to Air-Q"
+                },
+                {
+                    "type": "PasswordTextBox",
+                    "name": "password",
+                    "caption": "Password"
+                },
+                {
+                    "type": "NumberSpinner",
+                    "name": "refresh",
+                    "caption": "Refresh interval",
+                    "suffix": "seconds"
+                },
+                {
+                    "type": "NumberSpinner",
+                    "name": "refreshAverage",
+                    "caption": "Refresh interval average calculation",
+                    "suffix": "seconds"
+                }
+            ]
         },
         {
-            "type": "Label",
-            "caption": "If you are using a WebHook for receiving sensor data, you should set both refresh intervals to 0 (disabled). Average calculation is performed each time, data is received by the WebHook."
-        },
-        {
-            "type": "NumberSpinner",
-            "name": "refresh",
-            "caption": "Refresh interval",
-            "suffix": "seconds"
-        },
-        {
-            "type": "NumberSpinner",
-            "name": "refreshAverage",
-            "caption": "Refresh interval average calculation",
-            "suffix": "seconds"
+            "type": "ExpansionPanel",
+            "caption": "WebHook settings (for Mode 2)",
+            "items": [
+                {
+                    "type": "ValidationTextBox",
+                    "name": "WebHookUrl",
+                    "caption": "External URL for webhook"
+                },
+                {
+                    "type": "Label",
+                    "caption": "For example: http://yourDomainOrIPMagicAddress.de/hook/sxairq"
+                },
+                {
+                    "type": "NumberSpinner",
+                    "name": "WebHookInterval",
+                    "caption": "Send Interval",
+                    "suffix": "seconds"
+                }
+            ]
         },
         {
             "type": "Label",
@@ -217,6 +255,16 @@
             "type": "Button",
             "caption": "Refresh Sensor variable profiles",
             "onClick": "SXAIRQ_UpdateSensorProfiles($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Configure AirQ to send data to WebHook",
+            "onClick": "SXAIRQ_SetWebHookConfig($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Remove WebHook configuration from AirQ",
+            "onClick": "SXAIRQ_RemoveWebHookConfig($id);"
         }
     ],
     "status": [

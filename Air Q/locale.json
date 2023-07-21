@@ -103,7 +103,16 @@
             "Ignore below 0 values": "Ignoriere Werte unter 0",
             "DeviceID from HTTP Post and AirQ Instance does not match!": "DeviceID aus den HTTP Daten und der AirQ Instanz stimmen nicht überein.",
             "Refresh Sensor variable profiles": "Aktualisiere Sensor Variablenprofile",
-            "If you are using a WebHook for receiving sensor data, you should set both refresh intervals to 0 (disabled). Average calculation is performed each time, data is received by the WebHook.": "Wenn ein WehHook für das empfangen der Daten verwendet wird, sollten beide Aktualisierungsintervalle auf 0 (deaktiviert) gesetzt werden. Die Durchschnittsberechnung erfolgt jedes mal beim Empfang von Daten auf dem WebHook."
+            "If you are using a WebHook for receiving sensor data, you should set both refresh intervals to 0 (disabled). Average calculation is performed each time, data is received by the WebHook.": "Wenn ein WehHook für das empfangen der Daten verwendet wird, sollten beide Aktualisierungsintervalle auf 0 (deaktiviert) gesetzt werden. Die Durchschnittsberechnung erfolgt jedes mal beim Empfang von Daten auf dem WebHook.",
+            "Mode 1 - Symcon request data from AirQ (every AirQ version - fast - internal connnection required":"Modus 1 - Symcon frägt Daten von AirQ an (jede AirQ Version - schnell - Direkte Verbindung erforderlich)",
+            "Mode 2 - AirQ sends data to WebHook (Science version only - slow - connect service usable)":"Modus 2 - AirQ sendet Daten an WebHook (nur Science Version - langsam - Connect Dienst kann verwendet werden.)",
+            "Direct connection to AirQ (for Mode 1 and configuration)":"Direkte verbindung zum AirQ (Für Modus 1 und Konfiguration)",
+            "WebHook settings (for Mode 2)": "WebHook Einstellungen (für Modus 2)",
+            "For example: http://yourDomainOrIPMagicAddress.de/hook/sxairq":"Beispiel: http://yourDomainOrIPMagicAddress.de/hook/sxairq",
+            "Send Interval": "Sende Interval",
+            "External URL for webhook": "Externe URL zum WebHook",
+            "Configure AirQ to send data to WebHook": "Konfiguriere AirQ zum senden von Daten an den WebHook",
+            "Remove WebHook configuration from AirQ": "Entferne die WebHook Konfiguration vom AirQ"
         }
     }
 }

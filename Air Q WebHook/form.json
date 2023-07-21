@@ -2,7 +2,7 @@
     "elements": [
         {
             "type": "Label",
-            "label": "http://127.0.0.1:3777/hook/sxairq/"
+            "label": "There is nothing to configure here. This Instance automatically passes received data to an Air-Q instance."
         }
     ]
 }

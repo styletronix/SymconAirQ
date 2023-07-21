@@ -138,7 +138,7 @@ class AirQ extends IPSModule
 		'Minute' => 1
 	];
 
-	
+
 
 	public function __construct($InstanceID)
 	{
@@ -186,10 +186,13 @@ class AirQ extends IPSModule
 
 		$this->RegisterPropertyBoolean('active', false);
 		$this->RegisterPropertyString('url', 'http://');
+		$this->RegisterPropertyInteger("mode", 0);
 		$this->RegisterPropertyString('password', '');
-		$this->RegisterPropertyInteger("refresh", 10);
-		$this->RegisterPropertyInteger("refreshAverage", 20);
+		$this->RegisterPropertyInteger('refresh', 10);
+		$this->RegisterPropertyInteger('refreshAverage', 20);
 		$this->RegisterPropertyString('Sensors', '');
+		$this->RegisterPropertyString('WebHookUrl', $this->GetCallbackURL());
+		$this->RegisterPropertyInteger('WebHookInterval', 120);
 
 		$this->RegisterAttributeString('DeviceConfig', '');
 
@@ -263,12 +266,35 @@ class AirQ extends IPSModule
 	{
 		parent::ApplyChanges();
 
-		$this->SetTimerInterval('update', ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0));
-		$this->SetTimerInterval('updateAverage', ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refreshAverage') * 1000 : 0));
+		if ($this->ReadPropertyBoolean('active') && $this->ReadPropertyInteger('mode') == 0) {
+			$refresh = $this->ReadPropertyInteger('refresh') * 1000;
+		} else {
+			$refresh = 0;
+		}
 
-		$this->Update(true);
+		if ($this->ReadPropertyBoolean('active') && $this->ReadPropertyInteger('mode') == 0) {
+			$refreshAverage = $this->ReadPropertyInteger('refreshAverage') * 1000;
+		} else {
+			$refreshAverage = 0;
+		}
+
+		$this->SetTimerInterval('update', $refresh);
+		$this->SetTimerInterval('updateAverage', $refreshAverage);
+
+		if ($this->ReadPropertyBoolean('active') && $this->ReadPropertyInteger('mode') == 0) {
+			$this->Update(true);
+		}
+
+		if ($this->ReadPropertyInteger('mode') == 1) {
+			$hookId = IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
+			if (!$hookId) {
+				$hookId = IPS_CreateInstance("{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}");
+				IPS_SetName($hookId, "AirQ WebHook"); // Instanz benennen
+				IPS_ApplyChanges($hookId);
+			}
+		}
 	}
-	
+
 	private function CreateProfileIfNotExists(string $name, int $digits, string $suffix, float $min, float $max, int $type = 2)
 	{
 		$name = 'SXAIRQ.' . $name;
@@ -290,11 +316,17 @@ class AirQ extends IPSModule
 			$info = $this->GetSensorInfoBySensorID($data, $sensor);
 			if ($info) {
 				$unit = $info['Unit'];
-				if ($unit && is_array($unit)) { $unit = $unit[$sensor]; }
+				if ($unit && is_array($unit)) {
+					$unit = $unit[$sensor];
+				}
 
-				$digits = key_exists('Round Digits',$info) ? $info['Round Digits'] : $info['RoundDigits'];
-				if ($digits && is_array($digits)) { $digits = $digits[$unit]; }
-				if (!$digits){ $digits = 0; }
+				$digits = key_exists('Round Digits', $info) ? $info['Round Digits'] : $info['RoundDigits'];
+				if ($digits && is_array($digits)) {
+					$digits = $digits[$unit];
+				}
+				if (!$digits) {
+					$digits = 0;
+				}
 				$digits = (int) $digits;
 
 
@@ -305,13 +337,13 @@ class AirQ extends IPSModule
 				if ($digits >= 0) {
 					IPS_SetVariableProfileDigits($profileName, $digits);
 				}
-				if ($unit){
+				if ($unit) {
 					$unit = str_replace('^3', '³', $unit);
 					$unit = str_replace('^2', '²', $unit);
 					$unit = str_replace('deg', '°', $unit);
 					$unit = str_replace('u', 'µ', $unit);
 
-					if ($unit == '%'){
+					if ($unit == '%') {
 						IPS_SetVariableProfileValues($profileName, 0, 100, 1);
 					}
 					IPS_SetVariableProfileText($profileName, '', ' ' . $unit);
@@ -335,6 +367,40 @@ class AirQ extends IPSModule
 			}
 		}
 		return null;
+	}
+	private function GetCallbackURL()
+	{
+		$cc_id = IPS_GetInstanceListByModuleID('{9486D575-BE8C-4ED8-B5B5-20930E26DE6F}')[0];
+		$cc_url = @CC_GetConnectURL($cc_id);
+
+		if ($cc_url) {
+			return $cc_url . '/hook/sxairq';
+		}
+
+		return null;
+	}
+	public function SetWebHookConfig()
+	{
+		$config = [
+			'httpPOST' => [
+				'URL' => $this->ReadPropertyString('WebHookUrl'),
+				'Headers' => ['Content-Type' => 'application/json'],
+				'averages' => true,
+				'delay' => $this->ReadPropertyInteger('WebHookInterval')
+			]
+		];
+
+		return $this->SetDeviceConfig($config);
+	}
+	public function RemoveWebHookConfig()
+	{
+		$config = [
+			'httpPOST' => [
+				'URL' => null
+			]
+		];
+
+		return $this->SetDeviceConfig($config);
 	}
 	private function GetFriendlySensorName(int $sensorID)
 	{
@@ -859,7 +925,7 @@ class AirQ extends IPSModule
 	public function GetDeviceConfig()
 	{
 		$config = $this->GetDataDecoded('/config');
-		if ($config){
+		if ($config) {
 			$this->WriteAttributeString("DeviceConfig", json_encode($config));
 		}
 		return $config;
@@ -881,7 +947,7 @@ class AirQ extends IPSModule
 		if ($data['DeviceID'] == GetValueString($this->GetIDForIdent('DeviceID'))) {
 			$this->WriteSensorDataValues($data, $aggregate);
 			$this->WriteStatusValues($data);
-		}else{
+		} else {
 			throw new Exception($this->Translate('DeviceID from HTTP Post and AirQ Instance does not match!'));
 		}
 	}
