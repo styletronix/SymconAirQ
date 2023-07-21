@@ -59,12 +59,13 @@ class AirQWebHook extends IPSModule
     protected function ProcessHookData()
     {
         $rawData = file_get_contents("php://input");
-        $this->SendDebug('SXAirQWebHook', 'Data: ' . $rawData, 0);
+        $this->SendDebug('Received', 'Data: ' . $rawData, 0);
 
         $data = @json_decode($rawData, true);
         if ($data) {
             if (!key_exists('DeviceID', $data)) {
                 $msg = 'DeviceID not supplied';
+                $this->SendDebug('Error', $msg, 0);
                 $this->LogMessage($msg, KL_WARNING);
                 print($msg . "\n");
                 http_response_code(400);
@@ -78,12 +79,14 @@ class AirQWebHook extends IPSModule
                         SXAIRQ_StoreDataFromHTTPPost($id, $data);
 
                         $msg = 'Data OK - Processed by InstanceID ' . $id;
+                        $this->SendDebug('OK', $msg, 0);
                         $this->LogMessage($msg, KL_DEBUG);
                         print($msg . "\n");
                         http_response_code(200);
                         $found = true;
                         
                     } catch (Exception $ex) {
+                        $this->SendDebug('Error', $ex->getMessage(), 0);
                         print('Error: ' . $ex->getMessage() . "\n");
                         http_response_code(406);
                         return;
@@ -96,6 +99,7 @@ class AirQWebHook extends IPSModule
             }
 
             $msg = 'No AirQ Instance with supplied DeviceID found.';
+            $this->SendDebug('Error', $msg, 0);
             $this->LogMessage($msg, KL_WARNING);
             print($msg . "\n");
             http_response_code(404);
@@ -103,6 +107,7 @@ class AirQWebHook extends IPSModule
         }
 
         $msg = 'No Data supplied. This WebHook awaits data from an AirQ device.';
+        $this->SendDebug('Error', $msg, 0);
         $this->LogMessage($msg, KL_WARNING);
         print($msg . "\n");
         http_response_code(400);
