@@ -62,8 +62,8 @@ class AirQWebHook extends IPSModule
         $this->SendDebug('Received', 'Data: ' . $rawData, 0);
 
         $data = @json_decode($rawData, true);
-        $this->SendDebug('Parsed', 'Data: ' . print_r($data,true), 0);
-      
+        $this->SendDebug('Parsed', 'Data: ' . print_r($data, true), 0);
+
         if ($data) {
             if (!key_exists('DeviceID', $data)) {
                 $msg = 'DeviceID not supplied';
@@ -75,9 +75,10 @@ class AirQWebHook extends IPSModule
             }
 
             $found = false;
+            $this->SendDebug('DeviceID', $data['DeviceID'], 0);
             foreach (IPS_GetInstanceListByModuleID('{75D0E69C-5431-A726-2ADC-D6EBA6B623E9}') as $id) {
-                if (GetValueString(IPS_GetObjectIDByIdent('DeviceID', $id)) == $data['DeviceID']) {
-                    try {
+                try {
+                    if (GetValueString(IPS_GetObjectIDByIdent('DeviceID', $id)) == $data['DeviceID']) {
                         SXAIRQ_StoreDataFromHTTPPost($id, $data);
 
                         $msg = 'Data OK - Processed by InstanceID ' . $id;
@@ -86,17 +87,17 @@ class AirQWebHook extends IPSModule
                         print($msg . "\n");
                         http_response_code(200);
                         $found = true;
-                        
-                    } catch (Exception $ex) {
-                        $this->SendDebug('Error', $ex->getMessage(), 0);
-                        print('Error: ' . $ex->getMessage() . "\n");
-                        http_response_code(406);
-                        return;
                     }
+                } catch (Exception $e) {
+                    $msg = $e->getMessage();
+                    $this->SendDebug('Error', $msg, 0);
+                    print('Error: ' . $msg . "\n");
+                    http_response_code(406);
+                    return;
                 }
             }
 
-            if ($found) {
+            if ($found === true) {
                 return;
             }
 
