@@ -1,6 +1,7 @@
 <?php
 
-declare(strict_types=1);class AirQ extends IPSModule
+declare(strict_types=1);
+class AirQ extends IPSModule
 {
 	private static $StatusVars = [
 		'timestamp',
@@ -418,7 +419,7 @@ declare(strict_types=1);class AirQ extends IPSModule
 	public function GetDataDecoded(string $path = '/data')
 	{
 		$pw = $this->ReadPropertyString('password');
-		$url = trim($this->ReadPropertyString('url'), '\\') . $path;
+		$url = trim($this->ReadPropertyString('url'), '/') . $path;
 
 		if (!$pw || !$url) {
 			$this->SetStatus(204);
@@ -728,6 +729,7 @@ declare(strict_types=1);class AirQ extends IPSModule
 	}
 	private function getDataFromUrl(string $url)
 	{
+
 		$ch = curl_init();
 		$timeout = 5;
 		curl_setopt($ch, CURLOPT_URL, $url);
@@ -953,6 +955,30 @@ declare(strict_types=1);class AirQ extends IPSModule
 		} else {
 			return false;
 		}
+	}
+
+	public function GetFileList(string $folder, bool $fromBuffer = false)
+	{
+		$pw = $this->ReadPropertyString('password');
+		$url = trim($this->ReadPropertyString('url'), '/');
+		if (!$pw || !$url) {
+			return null;
+		}
+
+		if ($fromBuffer) {
+			$url = $url . '/dirbuff';
+		} else {
+			$url = $url . '/dir?request=' . $this->encryptString($folder, $pw);
+		}
+		$this->SendDebug("GetFileList",'URL: ' . $url, 0);
+
+		$encrypted = $this->getDataFromUrl($url);
+		$this->SendDebug("GetFileList", 'encrypted: ' . $encrypted, 0);
+		
+		$decrypted = $this->decryptString($encrypted, $pw);
+		$this->SendDebug("GetFileList", 'decrypted: ' . $decrypted, 0);
+
+		return json_decode($decrypted, true);
 	}
 
 	public function UpdateSensorList()
