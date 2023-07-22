@@ -1031,19 +1031,17 @@ class AirQ extends IPSModule
 		foreach($sensorData as $key => $value){
 			$result = AC_AddLoggedValues($archiveControlID, $key, $value);
 			if ($result) {
-				$changedVars[$key] = true;
+				$changedVars[] = $key;
 			}
 		}
-
+		$changedVars = array_values(array_unique($changedVars));
 		return $changedVars;
 	}
 	public function StoreHistoricDataCompleted(array $resultfromStore){
 		$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 
-		foreach ($resultfromStore as $key => $value) {
-			if ($value == true ){
-				AC_ReAggregateVariable($archiveControlID, $key);
-			}
+		foreach ($resultfromStore as $id) {
+				AC_ReAggregateVariable($archiveControlID, $id);
 		}
 	}
 
@@ -1073,7 +1071,7 @@ class AirQ extends IPSModule
 
 		return json_decode($decrypted, true);
 	}
-	public function GetFileContent($filepath)
+	public function GetFileContent(string $filepath, bool $returnUnencryptedOnFailure)
 	{
 		$pw = $this->ReadPropertyString('password');
 		$url = trim($this->ReadPropertyString('url'), '/');
@@ -1093,7 +1091,7 @@ class AirQ extends IPSModule
 				$decr = $this->decryptString($line, $pw);
 				if ($decr){
 					$result[] = $decr;
-				}else{
+				}elseif ($returnUnencryptedOnFailure){
 					$result[] = $line;
 				}
 			}
