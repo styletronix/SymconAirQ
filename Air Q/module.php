@@ -1207,6 +1207,21 @@ class AirQ extends IPSModule
 				throw new Exception("Invalid Ident");
 		}
 	}
+	private function IsPathLowerThan($path1,$path2){
+		if ( count_chars($path1) < count_chars($path2)){
+			$path2 = substr($path2 ,0,$count_chars($path1) );
+		}
+
+		if ( count_chars($path2) < count_chars($path1)){
+			$path1 = substr($path1 ,0,$count_chars($path2) );
+		}
+
+		if ($path1 < $path2){
+			return true;
+		}else{
+			return false;
+		}
+	}
 	public function ImportAllFiles(int $limit = 10){
 		$allFiles = [];
 		$path = '';
@@ -1218,24 +1233,24 @@ class AirQ extends IPSModule
 		$data = $this->GetFileList($path, false);
 		foreach ($data as $year) {
 			if (is_numeric($year)) {
-				if ((string) $year < $lastFileImported){
+				if ($this->IsPathLowerThan((string)$year, $lastFileImported)){
 					continue;
 				}
 				$months = $this->GetFileList((string) $year, false);
 				foreach ($months as $month) {
-					if (($year . '/' . $month) < $lastFileImported) {
+					if ($this->IsPathLowerThan($year . '/' . $month, $lastFileImported)) {
 						continue;
 					}
 
 					$days = $this->GetFileList($year . '/' . $month, false);
 					foreach ($days as $day) {
-						if (($year . '/' . $month . '/' . $day) < $lastFileImported) {
+						if ($this->IsPathLowerThan($year . '/' . $month . '/' . $day, $lastFileImported)) {
 							continue;
 						}
 
 						$files = $this->GetFileList($year . '/' . $month . '/' . $day, false);
 						foreach ($files as $file) {
-							if (($year . '/' . $month . '/' . $day . '/' . $file) < $lastFileImported) {
+							if ($this->IsPathLowerThan($year . '/' . $month . '/' . $day . '/' . $file, $lastFileImported)) {
 								continue;
 							}
 							$allFiles[] = $year . '/' . $month . '/' . $day . '/' . $file;
