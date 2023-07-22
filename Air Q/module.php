@@ -582,6 +582,7 @@ class AirQ extends IPSModule
 	{
 		return $this->RegisterVariableFloat($sensor['Sensor'], $sensor['FriendlyName'], $this->GetProfileNameForSensor($sensor));
 	}
+
 	private function WriteSensorDataValues(array $data, bool $includeAggregated = false)
 	{
 		$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
@@ -956,6 +957,95 @@ class AirQ extends IPSModule
 			return false;
 		}
 	}
+	public function StoreHistoricData(array $data)
+	{
+		$deviceID = GetValueString($this->GetIDForIdent('DeviceID'));
+		$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
+		$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
+		$sensorData = [];
+		$sensormapping = [];
+
+		foreach ($sensorlist as $sensor) {
+			if (!$sensor['Enabled'] || in_array($sensor['Sensor'], self::$StatusVars)) {
+				// Sensor disabled or is in StatusVars'
+				continue;
+			}
+
+			$indentSensorValue = $sensor['Sensor'];
+			$item = [
+				'config' => $sensor,
+				'variableid' => @$this->GetIDForIdent($indentSensorValue),
+				'variable2id' => @$this->GetIDForIdent($indentSensorValue . '_dev')
+			];
+
+			if ($item['variableid'] && AC_GetLoggingStatus($archiveControlID, $item['variableid'])) {
+				$sensorData[$item['variableid']] = [];
+
+				if ($item['variable2id'] && AC_GetLoggingStatus($archiveControlID, $item['variable2id'])) {
+					$sensorData[$item['variable2id']] = [];
+				}else{
+					$item['variable2id'] = null;
+				}
+
+				$sensormapping[$sensor['Sensor']] = $item;
+			}
+		}
+
+		foreach ($data as $item) {
+			if ($item['DeviceID'] == $deviceID) {
+				$timestamp = (int) ($item['timestamp'] / 1000);
+
+				foreach ($item as $key => $value) {
+					if (key_exists($key, $sensormapping)) {
+						$config = $sensormapping[$key];
+						if (is_array($value)) {
+							$val = $value[0];
+							$val2 = $value[1];
+						} else {
+							$val = $value;
+							$val2 = null;
+						}
+
+						$val = ($val + ($config['config']['Offset'] ?? 0.0)) * ($config['config']['Multiplicator'] ?? 1.0);
+						if ($config['config']['ignorebelowzero'] && $val < 0.0) {
+							$val = 0.0;
+						}
+						if ($config['variableid']) {
+							$sensorData[$config['variableid']][] = [
+								'TimeStamp' => $timestamp,
+								'Value' => $val
+							];
+						}
+						if ($config['variable2d'] && $val2 !== null) {
+							$sensorData[$config['variable2id']][] = [
+								'TimeStamp' => $timestamp,
+								'Value' => $val2
+							];
+						}
+					}
+				}
+			}
+		}
+
+		$changedVars = [];
+		foreach($sensorData as $key => $value){
+			$result = AC_AddLoggedValues($archiveControlID, $key, $value);
+			if ($result) {
+				$changedVars[$key] = true;
+			}
+		}
+
+		return $changedVars;
+	}
+	public function StoreHistoricDataCompleted(array $resultfromStore){
+		$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
+
+		foreach ($resultfromStore as $key => $value) {
+			if ($value == true ){
+				AC_ReAggregateVariable($archiveControlID, $key);
+			}
+		}
+	}
 
 	public function GetFileList(string $folder, bool $fromBuffer = false)
 	{
@@ -970,7 +1060,7 @@ class AirQ extends IPSModule
 		} else {
 			$url = $url . '/dir?request=' . $this->encryptString($folder, $pw);
 		}
-		$this->SendDebug("GetFileList",'URL: ' . $url, 0);
+		$this->SendDebug("GetFileList", 'URL: ' . $url, 0);
 
 		$encrypted = $this->getDataFromUrl($url);
 		$this->SendDebug("GetFileList", 'encrypted: ' . $encrypted, 0);
@@ -983,7 +1073,8 @@ class AirQ extends IPSModule
 
 		return json_decode($decrypted, true);
 	}
-	public function GetFileContent($filepath){
+	public function GetFileContent($filepath)
+	{
 		$pw = $this->ReadPropertyString('password');
 		$url = trim($this->ReadPropertyString('url'), '/');
 		if (!$pw || !$url) {
@@ -995,17 +1086,17 @@ class AirQ extends IPSModule
 
 		$encrypted = $this->getDataFromUrl($url);
 		$this->SendDebug("GetFileContent", 'encrypted: ' . $encrypted, 0);
-		
+
 		$result = [];
-		foreach(explode("\n",$encrypted) as $line){
-			if ($line){
+		foreach (explode("\n", $encrypted) as $line) {
+			if ($line) {
 				$result[] = $this->decryptString($line, $pw);
 			}
 		}
 
-		foreach($result as &$line){
+		foreach ($result as &$line) {
 			$parsed = @json_decode($line, true);
-			if ($parsed){
+			if ($parsed) {
 				$line = $parsed;
 			}
 		}
