@@ -198,6 +198,7 @@ class AirQ extends IPSModule
 
 		$this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
 		$this->RegisterVariableString('DeviceID', $this->Translate('DeviceID'));
+		$this->RegisterVariableString('lastFileImported', $this->Translate('Last File Imported'));
 		$this->RegisterVariableString('Status', $this->Translate('Status'));
 		$this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
 		$this->RegisterVariableInteger('measuretime', $this->Translate('Measuretime'), '');
@@ -1205,6 +1206,59 @@ class AirQ extends IPSModule
 			default:
 				throw new Exception("Invalid Ident");
 		}
+	}
+	public function ImportAllFiles($limit = 10){
+		$allFiles = [];
+		$path = '';
+		$lastFileImported = $this->GetValueString( $this->GetIDForIdent('lastFileImported'));
+		if (!$lastFileImported) {
+			$lastFileImported = '0';
+		}
+
+		$data = $this->GetFileList($path, false);
+		foreach ($data as $year) {
+			if (is_numeric($year)) {
+				if ((string) $year < $lastFileImported){
+					continue;
+				}
+				$months = $this->GetFileList((string) $year, false);
+				foreach ($months as $month) {
+					if (($year . '/' . $month) < $lastFileImported) {
+						continue;
+					}
+
+					$days = $this->GetFileList($year . '/' . $month, false);
+					foreach ($days as $day) {
+						if (($year . '/' . $month . '/' . $day) < $lastFileImported) {
+							continue;
+						}
+
+						$files = $this->GetFileList($year . '/' . $month . '/' . $day, false);
+						foreach ($files as $file) {
+							if (($year . '/' . $month . '/' . $day . '/' . $file) < $lastFileImported) {
+								continue;
+							}
+							$allFiles[] = $year . '/' . $month . '/' . $day . '/' . $file;
+						}
+					}
+				}
+			}
+		}
+
+		$importResult = [];
+		$count = 0;
+		foreach ($allFiles as $file) {
+				$count++;
+				$data = $this->GetFileContent($file, false);
+				$importResult = array_merge($importResult, $this->StoreHistoricData($data));
+				$this->SetValueString($this->GetIDForIdent('lastFileImported'), $file);
+				if ($count >= $limit) {
+					break;
+				}
+		}
+
+		$importResult = array_unique($importResult);
+		$this->StoreHistoricDataCompleted($importResult);
 	}
 }
 ?>
