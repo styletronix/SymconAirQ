@@ -1090,15 +1090,20 @@ class AirQ extends IPSModule
 		$result = [];
 		foreach (explode("\n", $encrypted) as $line) {
 			if ($line) {
-				$result[] = $this->decryptString($line, $pw);
+				$decr = $this->decryptString($line, $pw);
+				if ($decr){
+					$result[] = $decr;
+				}else{
+					$result[] = $line;
+				}
 			}
 		}
 
 		foreach ($result as &$line) {
-			$parsed = @json_decode($line, true);
-			if ($parsed) {
-				$line = $parsed;
-			}
+				$parsed = @json_decode($line, true);
+				if ($parsed) {
+					$line = $parsed;
+				}
 		}
 
 		return $result;
