@@ -1208,12 +1208,12 @@ class AirQ extends IPSModule
 		}
 	}
 	private function IsPathLowerThan($path1,$path2){
-		if (count($path1) < count($path2)){
-			$path2 = substr($path2 ,0, count($path1) );
+		if (strlen($path1) < strlen($path2)){
+			$path2 = substr($path2 ,0, strlen($path1) );
 		}
 
-		if (count($path2) < count($path1)){
-			$path1 = substr($path1 ,0, count($path2) );
+		if (strlen($path2) < strlen($path1)){
+			$path1 = substr($path1 ,0, strlen($path2) );
 		}
 
 		if ($path1 < $path2){
