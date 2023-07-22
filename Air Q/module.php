@@ -1207,10 +1207,10 @@ class AirQ extends IPSModule
 				throw new Exception("Invalid Ident");
 		}
 	}
-	public function ImportAllFiles($limit = 10){
+	public function ImportAllFiles(int $limit = 10){
 		$allFiles = [];
 		$path = '';
-		$lastFileImported = $this->GetValueString( $this->GetIDForIdent('lastFileImported'));
+		$lastFileImported = GetValueString( $this->GetIDForIdent('lastFileImported'));
 		if (!$lastFileImported) {
 			$lastFileImported = '0';
 		}
@@ -1251,7 +1251,7 @@ class AirQ extends IPSModule
 				$count++;
 				$data = $this->GetFileContent($file, false);
 				$importResult = array_merge($importResult, $this->StoreHistoricData($data));
-				$this->SetValueString($this->GetIDForIdent('lastFileImported'), $file);
+				SetValueString($this->GetIDForIdent('lastFileImported'), $file);
 				if ($count >= $limit) {
 					break;
 				}
