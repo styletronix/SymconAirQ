@@ -1,6 +1,5 @@
 <?php
 
-declare(strict_types=1);
 class AirQ extends IPSModule
 {
 	private static $StatusVars = [
@@ -1016,7 +1015,7 @@ class AirQ extends IPSModule
 								'Value' => $val
 							];
 						}
-						if ($config['variable2d'] && $val2 !== null) {
+						if ( $config['variable2d'] && $val2 !== null) {
 							$sensorData[$config['variable2id']][] = [
 								'TimeStamp' => $timestamp,
 								'Value' => $val2
