@@ -984,7 +984,7 @@ class AirQ extends IPSModule
 
 				if ($item['variable2id'] && AC_GetLoggingStatus($archiveControlID, $item['variable2id'])) {
 					$sensorData[$item['variable2id']] = [];
-				}else{
+				} else {
 					$item['variable2id'] = null;
 				}
 
@@ -1017,7 +1017,7 @@ class AirQ extends IPSModule
 								'Value' => $val
 							];
 						}
-						if ( key_exists('variable2d',$config) && $val2 !== null) {
+						if (key_exists('variable2d', $config) && $val2 !== null) {
 							$sensorData[$config['variable2id']][] = [
 								'TimeStamp' => $timestamp,
 								'Value' => $val2
@@ -1029,7 +1029,7 @@ class AirQ extends IPSModule
 		}
 
 		$changedVars = [];
-		foreach($sensorData as $key => $value){
+		foreach ($sensorData as $key => $value) {
 			$result = AC_AddLoggedValues($archiveControlID, $key, $value);
 			if ($result) {
 				$changedVars[] = $key;
@@ -1038,11 +1038,13 @@ class AirQ extends IPSModule
 		$changedVars = array_values(array_unique($changedVars));
 		return $changedVars;
 	}
-	public function StoreHistoricDataCompleted(array $resultfromStore){
+	public function StoreHistoricDataCompleted(array $resultfromStore)
+	{
 		$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 
+		$this->SendDebug("StoreHistoricDataCompleted", 'starting reaggregation of ' . count($resultfromStore) . ' variables.', 0);
 		foreach ($resultfromStore as $id) {
-				AC_ReAggregateVariable($archiveControlID, $id);
+			AC_ReAggregateVariable($archiveControlID, $id);
 		}
 	}
 
@@ -1090,19 +1092,19 @@ class AirQ extends IPSModule
 		foreach (explode("\n", $encrypted) as $line) {
 			if ($line) {
 				$decr = $this->decryptString($line, $pw);
-				if ($decr){
+				if ($decr) {
 					$result[] = $decr;
-				}elseif ($returnUnencryptedOnFailure){
+				} elseif ($returnUnencryptedOnFailure) {
 					$result[] = $line;
 				}
 			}
 		}
 
 		foreach ($result as &$line) {
-				$parsed = @json_decode($line, true);
-				if ($parsed) {
-					$line = $parsed;
-				}
+			$parsed = @json_decode($line, true);
+			if ($parsed) {
+				$line = $parsed;
+			}
 		}
 
 		return $result;
@@ -1207,50 +1209,64 @@ class AirQ extends IPSModule
 				throw new Exception("Invalid Ident");
 		}
 	}
-	private function IsPathLowerThan($path1,$path2){
-		if (strlen($path1) < strlen($path2)){
-			$path2 = substr($path2 ,0, strlen($path1) );
+	private function IsPathLowerThan($path1, $path2)
+	{
+		if (strlen($path1) < strlen($path2)) {
+			$path2 = substr($path2, 0, strlen($path1));
 		}
 
-		if (strlen($path2) < strlen($path1)){
-			$path1 = substr($path1 ,0, strlen($path2) );
+		if (strlen($path2) < strlen($path1)) {
+			$path1 = substr($path1, 0, strlen($path2));
 		}
 
-		if ($path1 < $path2){
+		if ($path1 < $path2) {
 			return true;
-		}else{
+		} else {
 			return false;
 		}
 	}
-	public function ImportAllFiles(int $limit = 10){
+	public function ImportAllFiles(int $limit = 10)
+	{
 		$allFiles = [];
 		$path = '';
-		$lastFileImported = GetValueString( $this->GetIDForIdent('lastFileImported'));
+		$lastFileID = $this->GetIDForIdent('lastFileImported');
+		$lastFileRowID = $this->GetIDForIdent('lastFileRowImported');
+
+		$lastFileImported = GetValueString($lastFileID);
+		$lastFileRowImported = GetValueInteger($lastFileRowID);
+
+
 		if (!$lastFileImported) {
 			$lastFileImported = '0';
 		}
 
+		$this->SendDebug("ImportFile", 'Reading path recursive ' . $path, 0);
 		$data = $this->GetFileList($path, false);
+		$skippedPaths = 0;
 		foreach ($data as $year) {
 			if (is_numeric($year)) {
-				if ($this->IsPathLowerThan((string)$year, $lastFileImported)){
+				if ($this->IsPathLowerThan((string) $year, $lastFileImported)) {
+					$skippedPaths++;
 					continue;
 				}
 				$months = $this->GetFileList((string) $year, false);
 				foreach ($months as $month) {
 					if ($this->IsPathLowerThan($year . '/' . $month, $lastFileImported)) {
+						$skippedPaths++;
 						continue;
 					}
 
 					$days = $this->GetFileList($year . '/' . $month, false);
 					foreach ($days as $day) {
 						if ($this->IsPathLowerThan($year . '/' . $month . '/' . $day, $lastFileImported)) {
+							$skippedPaths++;
 							continue;
 						}
 
 						$files = $this->GetFileList($year . '/' . $month . '/' . $day, false);
 						foreach ($files as $file) {
 							if ($this->IsPathLowerThan($year . '/' . $month . '/' . $day . '/' . $file, $lastFileImported)) {
+								$skippedPaths++;
 								continue;
 							}
 							$allFiles[] = $year . '/' . $month . '/' . $day . '/' . $file;
@@ -1262,17 +1278,37 @@ class AirQ extends IPSModule
 
 		$importResult = [];
 		$count = 0;
+
+		$this->SendDebug("ImportFile", 'Found ' . count($allFiles) . ' files to import. Skipped ' . $skippedPaths . ' files and directories.', 0);
+
 		foreach ($allFiles as $file) {
-				$count++;
-				$data = $this->GetFileContent($file, false);
-				$importResult = array_merge($importResult, $this->StoreHistoricData($data));
-				SetValueString($this->GetIDForIdent('lastFileImported'), $file);
-				if ($count >= $limit) {
-					break;
-				}
+			$count++;
+
+			//TODO: possible DEADLOCK somewhere in this block
+			SetValueString($lastFileID, $file);
+			SetValueInteger($lastFileRowID, 0);
+
+			$this->SendDebug("ImportFile", $file, 0);
+			$data = $this->GetFileContent($file, false);
+
+			if ($lastFileImported == $file && $lastFileRowImported > 0) {
+				$this->SendDebug("ImportFile", count($data) . ' Rows in File. Resuming import at Row ' . $lastFileRowImported, 0);
+				$data = array_slice($data, $lastFileRowImported);
+			}
+
+			$this->SendDebug("ImportFile", 'Storing ' . count($data) . ' Rows...', 0);
+			$tempResult = $this->StoreHistoricData($data);
+			$this->SendDebug("ImportFile", 'Total of ' . count($tempResult) . ' Variables affected.', 0);
+			SetValueInteger($lastFileRowID, $lastFileRowImported + count($data));
+
+			$importResult = array_unique(array_merge($importResult, $tempResult));
+
+			if ($count >= $limit) {
+				$this->SendDebug("ImportFile", 'Limit of ' . $limit . ' files per Import reached.', 0);
+				break;
+			}
 		}
 
-		$importResult = array_unique($importResult);
 		$this->StoreHistoricDataCompleted($importResult);
 	}
 }
