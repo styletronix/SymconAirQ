@@ -8,13 +8,13 @@ class AirQ extends IPSModule
 	const ATTRIB_NEWID = 'NewID';
 	const ATTRIB_DEVICECONFIG = 'DeviceConfig';
 
+	const IDENT_DEVICEID = 'DeviceID';
+
 	const TIMER_UPDATE = 'update';
 	const TIMER_UPDATEAVERAGE = 'updateAverage';
 
 	const PROP_URL = 'url';
 
-	private $VarID_timestamp;
-	private $VarID_DeviceID;
 	private $VarID_Status;
 	private $VarID_uptime;
 	private $VarID_measuretime;
@@ -158,7 +158,6 @@ class AirQ extends IPSModule
 	{
 		parent::__construct($InstanceID);
 	}
-
 	public function Create()
 	{
 		parent::Create();
@@ -212,8 +211,8 @@ class AirQ extends IPSModule
 		$this->RegisterAttributeString(self::ATTRIB_LAST_FILE_IMPORTED, '');
 		$this->RegisterAttributeInteger(self::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
 
-		$this->VarID_timestamp = $this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
-		$this->VarID_DeviceID = $this->RegisterVariableString('DeviceID', $this->Translate('DeviceID'));
+		 $this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
+		$this->RegisterVariableString(self::IDENT_DEVICEID, $this->Translate('DeviceID'));
 		$this->VarID_Status = $this->RegisterVariableString('Status', $this->Translate('Status'));
 		$this->VarID_uptime = $this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
 		$this->VarID_measuretime = $this->RegisterVariableInteger('measuretime', $this->Translate('Measuretime'), '');
@@ -965,7 +964,7 @@ class AirQ extends IPSModule
 	}
 	public function StoreDataFromHTTPPost(array $data, bool $aggregate)
 	{
-		if ($data['DeviceID'] == GetValueString($this->VarID_DeviceID)) {
+		if ($data['DeviceID'] == GetValueString($this->GetIDForIdent(self::IDENT_DEVICEID))) {
 			$this->WriteSensorDataValues($data, $aggregate);
 			$this->WriteStatusValues($data);
 			return true;
@@ -975,7 +974,7 @@ class AirQ extends IPSModule
 	}
 	public function StoreHistoricData(array $data)
 	{
-		$deviceID = GetValueString($this->VarID_DeviceID);
+		$deviceID = GetValueString($this->GetIDForIdent(self::IDENT_DEVICEID));
 		$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
 		$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 		$sensorData = [];
