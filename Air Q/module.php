@@ -193,7 +193,7 @@ class AirQ extends IPSModule
 			IPS_SetVariableProfileAssociation($name, 3, $this->Translate('Danger'), '', 0xFF0000);
 		}
 
-		$this->$this->RegisterPropertyBoolean('active', false);
+		$this->RegisterPropertyBoolean('active', false);
 		$this->RegisterPropertyString(self::PROP_URL, 'http://');
 		$this->RegisterPropertyInteger("mode", 0);
 		$this->RegisterPropertyString('password', '');
