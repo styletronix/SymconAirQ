@@ -13,6 +13,11 @@ class AirQ extends IPSModule
 
 	const PROP_URL = 'url';
 
+	private $VarID_timestamp;
+	private $VarID_DeviceID;
+	private $VarID_Status;
+	private $VarID_uptime;
+	private $VarID_measuretime;
 
 	private static $StatusVars = [
 		'timestamp',
