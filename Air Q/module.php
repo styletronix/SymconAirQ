@@ -5,12 +5,14 @@ class AirQ extends IPSModule
 {
 	static const ATTRIB_LAST_FILE_IMPORTED = 'lastFileImported';
 	static const ATTRIB_LAST_FILE_ROW_IMPORTED = 'lastFileRowImported';
-	static const TIMER_UPDATE = 'update';
-	static const TIMER_UPDATEAVERAGE = 'updateAverage';
 	static const ATTRIB_NEWID = 'NewID';
 	static const ATTRIB_DEVICECONFIG = 'DeviceConfig';
 
-	private int $VarID_timestamp;
+	static const TIMER_UPDATE = 'update';
+	static const TIMER_UPDATEAVERAGE = 'updateAverage';
+
+	static const PROP_URL = 'url';
+
 
 	private static $StatusVars = [
 		'timestamp',
@@ -192,7 +194,7 @@ class AirQ extends IPSModule
 		}
 
 		$this->	$this->RegisterPropertyBoolean('active', false);
-		$this->RegisterPropertyString('url', 'http://');
+		$this->RegisterPropertyString(self::PROP_URL, 'http://');
 		$this->RegisterPropertyInteger("mode", 0);
 		$this->RegisterPropertyString('password', '');
 		$this->RegisterPropertyInteger('refresh', 10);
@@ -207,7 +209,6 @@ class AirQ extends IPSModule
 
 		$this->VarID_timestamp = $this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
 		$this->VarID_DeviceID =  $this->RegisterVariableString('DeviceID', $this->Translate('DeviceID'));
-
 		$this->VarID_Status = $this->RegisterVariableString('Status', $this->Translate('Status'));
 		$this->VarID_uptime = $this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
 		$this->VarID_measuretime = $this->RegisterVariableInteger('measuretime', $this->Translate('Measuretime'), '');
@@ -229,7 +230,7 @@ class AirQ extends IPSModule
 				echo $this->Translate('Password missing');
 				return false;
 			}
-			$url = trim($this->ReadPropertyString('url'), '\\') . '/data';
+			$url = trim($this->ReadPropertyString(self::PROP_URL), '\\') . '/data';
 			if (!$url) {
 				echo $this->Translate('URL missing');
 				return false;
@@ -429,7 +430,7 @@ class AirQ extends IPSModule
 	public function GetDataDecoded(string $path = '/data')
 	{
 		$pw = $this->ReadPropertyString('password');
-		$url = trim($this->ReadPropertyString('url'), '/') . $path;
+		$url = trim($this->ReadPropertyString(self::PROP_URL), '/') . $path;
 
 		if (!$pw || !$url) {
 			$this->SetStatus(204);
@@ -474,7 +475,7 @@ class AirQ extends IPSModule
 	public function SendDataEncoded(string $path, array $data)
 	{
 		$pw = $this->ReadPropertyString('password');
-		$url = trim($this->ReadPropertyString('url'), '\\') . $path;
+		$url = trim($this->ReadPropertyString(self::PROP_URL), '\\') . $path;
 
 		if (!$pw || !$url) {
 			$this->SetStatus(204);
@@ -959,7 +960,7 @@ class AirQ extends IPSModule
 	}
 	public function StoreDataFromHTTPPost(array $data, bool $aggregate)
 	{
-		if ($data['DeviceID'] == GetValueString($this->GetIDForIdent('DeviceID'))) {
+		if ($data['DeviceID'] == GetValueString($this->VarID_DeviceID)) {
 			$this->WriteSensorDataValues($data, $aggregate);
 			$this->WriteStatusValues($data);
 			return true;
@@ -969,7 +970,7 @@ class AirQ extends IPSModule
 	}
 	public function StoreHistoricData(array $data)
 	{
-		$deviceID = GetValueString($this->GetIDForIdent('DeviceID'));
+		$deviceID = GetValueString($this->VarID_DeviceID);
 		$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
 		$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 		$sensorData = [];
@@ -1060,7 +1061,7 @@ class AirQ extends IPSModule
 	public function GetFileList(string $folder, bool $fromBuffer = false)
 	{
 		$pw = $this->ReadPropertyString('password');
-		$url = trim($this->ReadPropertyString('url'), '/');
+		$url = trim($this->ReadPropertyString(self::PROP_URL), '/');
 		if (!$pw || !$url) {
 			return null;
 		}
@@ -1086,7 +1087,7 @@ class AirQ extends IPSModule
 	public function GetFileContent(string $filepath, bool $returnUnencryptedOnFailure)
 	{
 		$pw = $this->ReadPropertyString('password');
-		$url = trim($this->ReadPropertyString('url'), '/');
+		$url = trim($this->ReadPropertyString(self::PROP_URL), '/');
 		if (!$pw || !$url) {
 			return null;
 		}
@@ -1194,11 +1195,11 @@ class AirQ extends IPSModule
 	private function TimerCallback(string $timer)
 	{
 		switch ($timer) {
-			case "update":
+			case self::TIMER_UPDATE:
 				$this->Update();
 				break;
 
-			case "updateAverage":
+			case self::TIMER_UPDATEAVERAGE:
 				$this->Update(true);
 				break;
 
