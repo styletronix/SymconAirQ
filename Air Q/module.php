@@ -205,7 +205,7 @@ class AirQ extends IPSModule
 
 		$this->RegisterAttributeString(self::ATTRIB_DEVICECONFIG, '');
 		$this->RegisterAttributeString(self::ATTRIB_LAST_FILE_IMPORTED, '');
-		$this->RegisterAttributeInteger(self::ATTRIB_LAST_FILE_ROW_IMPORTED, '');
+		$this->RegisterAttributeInteger(self::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
 
 		$this->VarID_timestamp = $this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
 		$this->VarID_DeviceID = $this->RegisterVariableString('DeviceID', $this->Translate('DeviceID'));
