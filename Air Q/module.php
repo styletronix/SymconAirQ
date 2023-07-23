@@ -9,15 +9,13 @@ class AirQ extends IPSModule
 	const ATTRIB_DEVICECONFIG = 'DeviceConfig';
 
 	const IDENT_DEVICEID = 'DeviceID';
+	const IDENT_HTML_LIMITS = 'HtmlLimits';
 
 	const TIMER_UPDATE = 'update';
 	const TIMER_UPDATEAVERAGE = 'updateAverage';
+	const TIMER_UPDATEHISTORICDATA = 'updateHistoricData';
 
 	const PROP_URL = 'url';
-
-	private $VarID_Status;
-	private $VarID_uptime;
-	private $VarID_measuretime;
 
 	private static $StatusVars = [
 		'timestamp',
@@ -211,14 +209,15 @@ class AirQ extends IPSModule
 		$this->RegisterAttributeString(self::ATTRIB_LAST_FILE_IMPORTED, '');
 		$this->RegisterAttributeInteger(self::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
 
-		 $this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
+		$this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
 		$this->RegisterVariableString(self::IDENT_DEVICEID, $this->Translate('DeviceID'));
-		$this->VarID_Status = $this->RegisterVariableString('Status', $this->Translate('Status'));
-		$this->VarID_uptime = $this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
-		$this->VarID_measuretime = $this->RegisterVariableInteger('measuretime', $this->Translate('Measuretime'), '');
-
-		$this->RegisterTimer(self::TIMER_UPDATE, ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "update");');
-		$this->RegisterTimer(self::TIMER_UPDATEAVERAGE, ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refreshAverage') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "updateAverage");');
+		$this->RegisterVariableString('Status', $this->Translate('Status'));
+		$this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
+		$this->RegisterVariableInteger('measuretime', $this->Translate('Measuretime'), '');
+		$this->RegisterVariableString(self::IDENT_HTML_LIMITS, $this->Translate('HTML-Limits'),'');
+		$this->RegisterTimer(self::TIMER_UPDATE, ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "' . self::TIMER_UPDATE . '");');
+		$this->RegisterTimer(self::TIMER_UPDATEHISTORICDATA, 0, 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "' . self::TIMER_UPDATEHISTORICDATA . '");');
+		$this->RegisterTimer(self::TIMER_UPDATEAVERAGE, ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refreshAverage') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "' . self::TIMER_UPDATEAVERAGE. '");');
 	}
 
 	public function Destroy()
@@ -277,6 +276,10 @@ class AirQ extends IPSModule
 		echo $this->Translate("Failed. See Debug window for details.");
 		return false;
 	}
+// private function UpdateHTML(){
+// 	$this->GetIDForIdent(self::IDENT_HTML_LIMITS);
+
+// }
 	public function ApplyChanges()
 	{
 		parent::ApplyChanges();
@@ -293,8 +296,8 @@ class AirQ extends IPSModule
 			$refreshAverage = 0;
 		}
 
-		$this->SetTimerInterval('update', $refresh);
-		$this->SetTimerInterval('updateAverage', $refreshAverage);
+		$this->SetTimerInterval(self::TIMER_UPDATE, $refresh);
+		$this->SetTimerInterval(self::TIMER_UPDATEAVERAGE, $refreshAverage);
 
 		if ($this->ReadPropertyBoolean('active') && $this->ReadPropertyInteger('mode') == 0) {
 			$this->Update(true);
@@ -1207,6 +1210,10 @@ class AirQ extends IPSModule
 				$this->Update(true);
 				break;
 
+				case self::TIMER_UPDATEHISTORICDATA:
+				$this->ImportAllFiles(100);
+				break;
+
 			default:
 				throw new Exception("Invalid TimerCallback");
 		}
@@ -1239,8 +1246,16 @@ class AirQ extends IPSModule
 			return false;
 		}
 	}
+	public function ResetImportFileProgress(){
+		$this->WriteAttributeString(self::ATTRIB_LAST_FILE_IMPORTED, '0');
+		$this->WritettributeInteger(self::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
+	}
+	public function ImportAllFilesAsync(int $limit = 100){
+		$this->RegisterOnceTimer(self::TIMER_UPDATEHISTORICDATA . '_now', 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "' . self::TIMER_UPDATEHISTORICDATA . '");');
 
-	public function ImportAllFiles(int $limit = 10)
+		echo $this->Translate('All Files will be imported from AirQ in Background. You can see the Progress in Messages.');
+	}
+	public function ImportAllFiles(int $limit = 100)
 	{
 		$allFiles = [];
 		$path = '';
@@ -1294,11 +1309,14 @@ class AirQ extends IPSModule
 
 		$importResult = [];
 		$count = 0;
+		$totalCount = count($data);
 
 		$this->SendDebug("ImportFile", 'Found ' . count($allFiles) . ' files to import. Skipped ' . $skippedPaths . ' files and directories.', 0);
 
 		foreach ($allFiles as $file) {
 			$count++;
+			$this->SendDebug("ImportFile", 'Importing file ' . $count . ' of ' . $totalCount, 0);
+			$this->LogMessage('Importing Files: ' . $count . ' / ' . $totalCount, KL_NOTIFY);
 
 			//TODO: possible DEADLOCK somewhere in this block
 			$this->WriteAttributeString(self::ATTRIB_LAST_FILE_IMPORTED, $file);
@@ -1319,8 +1337,9 @@ class AirQ extends IPSModule
 			$this->WriteAttributeInteger(self::ATTRIB_LAST_FILE_ROW_IMPORTED, $totalRows);
 
 			$importResult = array_unique(array_merge($importResult, $tempResult));
-
+			
 			if ($count >= $limit) {
+				$this->LogMessage('Limit of ' . $limit . ' files per Import reached.', KL_NOTIFY);
 				$this->SendDebug("ImportFile", 'Limit of ' . $limit . ' files per Import reached.', 0);
 				break;
 			}

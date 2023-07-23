@@ -265,6 +265,16 @@
             "type": "Button",
             "caption": "Remove WebHook configuration from AirQ",
             "onClick": "SXAIRQ_RemoveWebHookConfig($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Import Data from AirQ (Science version only)",
+            "onClick": "SXAIRQ_ImportAllFilesAsync($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Reset import progress",
+            "onClick": "SXAIRQ_ResetImportFileProgress($id);"
         }
     ],
     "status": [
