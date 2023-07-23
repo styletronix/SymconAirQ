@@ -3,15 +3,15 @@
 declare(strict_types=1);
 class AirQ extends IPSModule
 {
-	static const ATTRIB_LAST_FILE_IMPORTED = 'lastFileImported';
-	static const ATTRIB_LAST_FILE_ROW_IMPORTED = 'lastFileRowImported';
-	static const ATTRIB_NEWID = 'NewID';
-	static const ATTRIB_DEVICECONFIG = 'DeviceConfig';
+	const ATTRIB_LAST_FILE_IMPORTED = 'lastFileImported';
+	const ATTRIB_LAST_FILE_ROW_IMPORTED = 'lastFileRowImported';
+	const ATTRIB_NEWID = 'NewID';
+	const ATTRIB_DEVICECONFIG = 'DeviceConfig';
 
-	static const TIMER_UPDATE = 'update';
-	static const TIMER_UPDATEAVERAGE = 'updateAverage';
+	const TIMER_UPDATE = 'update';
+	const TIMER_UPDATEAVERAGE = 'updateAverage';
 
-	static const PROP_URL = 'url';
+	const PROP_URL = 'url';
 
 
 	private static $StatusVars = [
@@ -193,7 +193,7 @@ class AirQ extends IPSModule
 			IPS_SetVariableProfileAssociation($name, 3, $this->Translate('Danger'), '', 0xFF0000);
 		}
 
-		$this->	$this->RegisterPropertyBoolean('active', false);
+		$this->$this->RegisterPropertyBoolean('active', false);
 		$this->RegisterPropertyString(self::PROP_URL, 'http://');
 		$this->RegisterPropertyInteger("mode", 0);
 		$this->RegisterPropertyString('password', '');
@@ -208,7 +208,7 @@ class AirQ extends IPSModule
 		$this->RegisterAttributeInteger(self::ATTRIB_LAST_FILE_ROW_IMPORTED, '');
 
 		$this->VarID_timestamp = $this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
-		$this->VarID_DeviceID =  $this->RegisterVariableString('DeviceID', $this->Translate('DeviceID'));
+		$this->VarID_DeviceID = $this->RegisterVariableString('DeviceID', $this->Translate('DeviceID'));
 		$this->VarID_Status = $this->RegisterVariableString('Status', $this->Translate('Status'));
 		$this->VarID_uptime = $this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
 		$this->VarID_measuretime = $this->RegisterVariableInteger('measuretime', $this->Translate('Measuretime'), '');
