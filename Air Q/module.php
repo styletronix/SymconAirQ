@@ -3,6 +3,15 @@
 declare(strict_types=1);
 class AirQ extends IPSModule
 {
+	static const ATTRIB_LAST_FILE_IMPORTED = 'lastFileImported';
+	static const ATTRIB_LAST_FILE_ROW_IMPORTED = 'lastFileRowImported';
+	static const TIMER_UPDATE = 'update';
+	static const TIMER_UPDATEAVERAGE = 'updateAverage';
+	static const ATTRIB_NEWID = 'NewID';
+	static const ATTRIB_DEVICECONFIG = 'DeviceConfig';
+
+	private int $VarID_timestamp;
+
 	private static $StatusVars = [
 		'timestamp',
 		'Status',
@@ -138,8 +147,6 @@ class AirQ extends IPSModule
 		'Minute' => 1
 	];
 
-
-
 	public function __construct($InstanceID)
 	{
 		parent::__construct($InstanceID);
@@ -149,7 +156,7 @@ class AirQ extends IPSModule
 	{
 		parent::Create();
 
-		$this->RegisterAttributeInteger('NewID', 1);
+		$this->RegisterAttributeInteger(self::ATTRIB_NEWID, 1);
 
 		$this->CreateProfileIfNotExists('oxygen', 2, '%', 0, 25);
 		$this->CreateProfileIfNotExists('co', 3, 'mg/m³', 0, 5700);
@@ -184,7 +191,7 @@ class AirQ extends IPSModule
 			IPS_SetVariableProfileAssociation($name, 3, $this->Translate('Danger'), '', 0xFF0000);
 		}
 
-		$this->RegisterPropertyBoolean('active', false);
+		$this->	$this->RegisterPropertyBoolean('active', false);
 		$this->RegisterPropertyString('url', 'http://');
 		$this->RegisterPropertyInteger("mode", 0);
 		$this->RegisterPropertyString('password', '');
@@ -194,17 +201,19 @@ class AirQ extends IPSModule
 		$this->RegisterPropertyString('WebHookUrl', $this->GetCallbackURL());
 		$this->RegisterPropertyInteger('WebHookInterval', 120);
 
-		$this->RegisterAttributeString('DeviceConfig', '');
+		$this->RegisterAttributeString(self::ATTRIB_DEVICECONFIG, '');
+		$this->RegisterAttributeString(self::ATTRIB_LAST_FILE_IMPORTED, '');
+		$this->RegisterAttributeInteger(self::ATTRIB_LAST_FILE_ROW_IMPORTED, '');
 
-		$this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
-		$this->RegisterVariableString('DeviceID', $this->Translate('DeviceID'));
-		$this->RegisterVariableString('lastFileImported', $this->Translate('Last File Imported'));
-		$this->RegisterVariableString('Status', $this->Translate('Status'));
-		$this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
-		$this->RegisterVariableInteger('measuretime', $this->Translate('Measuretime'), '');
+		$this->VarID_timestamp = $this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
+		$this->VarID_DeviceID =  $this->RegisterVariableString('DeviceID', $this->Translate('DeviceID'));
 
-		$this->RegisterTimer("update", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "update");');
-		$this->RegisterTimer("updateAverage", ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refreshAverage') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "updateAverage");');
+		$this->VarID_Status = $this->RegisterVariableString('Status', $this->Translate('Status'));
+		$this->VarID_uptime = $this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
+		$this->VarID_measuretime = $this->RegisterVariableInteger('measuretime', $this->Translate('Measuretime'), '');
+
+		$this->RegisterTimer(self::TIMER_UPDATE, ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "update");');
+		$this->RegisterTimer(self::TIMER_UPDATEAVERAGE, ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refreshAverage') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "updateAverage");');
 	}
 
 	public function Destroy()
@@ -938,7 +947,7 @@ class AirQ extends IPSModule
 	}
 	public function GetDeviceConfigCached()
 	{
-		$config = $this->ReadAttributeString("DeviceConfig");
+		$config = $this->ReadAttributeString(self::ATTRIB_DEVICECONFIG);
 		if ($config) {
 			return json_decode($config, true);
 		}
@@ -1225,19 +1234,21 @@ class AirQ extends IPSModule
 			return false;
 		}
 	}
+
 	public function ImportAllFiles(int $limit = 10)
 	{
 		$allFiles = [];
 		$path = '';
-		$lastFileID = $this->GetIDForIdent('lastFileImported');
-		$lastFileRowID = $this->GetIDForIdent('lastFileRowImported');
 
-		$lastFileImported = GetValueString($lastFileID);
-		$lastFileRowImported = GetValueInteger($lastFileRowID);
-
+		$lastFileImported = $this->ReadAttributeString(self::ATTRIB_LAST_FILE_IMPORTED);
+		$lastFileRowImported = $this->ReadAttributeInteger(self::ATTRIB_LAST_FILE_ROW_IMPORTED);
 
 		if (!$lastFileImported) {
 			$lastFileImported = '0';
+			$lastFileRowImported = 0;
+		}
+		if (!$lastFileImported) {
+			$lastFileRowImported = 0;
 		}
 
 		$this->SendDebug("ImportFile", 'Reading path recursive ' . $path, 0);
@@ -1285,12 +1296,12 @@ class AirQ extends IPSModule
 			$count++;
 
 			//TODO: possible DEADLOCK somewhere in this block
-			SetValueString($lastFileID, $file);
-			SetValueInteger($lastFileRowID, 0);
+			$this->WriteAttributeString(self::ATTRIB_LAST_FILE_IMPORTED, $file);
+			$this->WriteAttributeInteger(self::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
 
 			$this->SendDebug("ImportFile", $file, 0);
 			$data = $this->GetFileContent($file, false);
-
+			$totalRows = count($data);
 			if ($lastFileImported == $file && $lastFileRowImported > 0) {
 				$this->SendDebug("ImportFile", count($data) . ' Rows in File. Resuming import at Row ' . $lastFileRowImported, 0);
 				$data = array_slice($data, $lastFileRowImported);
@@ -1299,7 +1310,8 @@ class AirQ extends IPSModule
 			$this->SendDebug("ImportFile", 'Storing ' . count($data) . ' Rows...', 0);
 			$tempResult = $this->StoreHistoricData($data);
 			$this->SendDebug("ImportFile", 'Total of ' . count($tempResult) . ' Variables affected.', 0);
-			SetValueInteger($lastFileRowID, $lastFileRowImported + count($data));
+
+			$this->WriteAttributeInteger(self::ATTRIB_LAST_FILE_ROW_IMPORTED, $totalRows);
 
 			$importResult = array_unique(array_merge($importResult, $tempResult));
 
