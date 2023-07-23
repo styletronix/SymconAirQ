@@ -1250,7 +1250,7 @@ class AirQ extends IPSModule
 		$this->WriteAttributeString(self::ATTRIB_LAST_FILE_IMPORTED, '0');
 		$this->WritettributeInteger(self::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
 	}
-	public function ImportAllFilesAsync(int $limit = 100){
+	public function ImportAllFilesAsync(){
 		$this->RegisterOnceTimer(self::TIMER_UPDATEHISTORICDATA . '_now', 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "' . self::TIMER_UPDATEHISTORICDATA . '");');
 
 		echo $this->Translate('All Files will be imported from AirQ in Background. You can see the Progress in Messages.');
