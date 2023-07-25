@@ -997,13 +997,11 @@ class AirQ extends IPSModule
 				'variable2id' => @$this->GetIDForIdent($indentSensorValue . '_dev')
 			];
 
-			if ($item['variableid'] && AC_GetLoggingStatus($archiveControlID, $item['variableid'])) {
+			if ($item['variableid'] > 0 && AC_GetLoggingStatus($archiveControlID, $item['variableid'])) {
 				$sensorData[$item['variableid']] = [];
 
-				if ($item['variable2id'] && AC_GetLoggingStatus($archiveControlID, $item['variable2id'])) {
+				if ($item['variable2id']>0 && AC_GetLoggingStatus($archiveControlID, $item['variable2id'])) {
 					$sensorData[$item['variable2id']] = [];
-				} else {
-					$item['variable2id'] = null;
 				}
 
 				$sensormapping[$indentSensorValue] = $item;
@@ -1017,6 +1015,7 @@ class AirQ extends IPSModule
 				foreach ($item as $key => $value) {
 					if (key_exists($key, $sensormapping)) {
 						$config = $sensormapping[$key];
+
 						if (is_array($value)) {
 							$val = $value[0];
 							$val2 = $value[1];
@@ -1029,13 +1028,13 @@ class AirQ extends IPSModule
 						if ($config['config']['ignorebelowzero'] && $val < 0.0) {
 							$val = 0.0;
 						}
-						if ($config['variableid']) {
+						if ($config['variableid'] > 0) {
 							$sensorData[$config['variableid']][] = [
 								'TimeStamp' => $timestamp,
 								'Value' => $val
 							];
 						}
-						if (key_exists('variable2d', $config) && $val2 !== null) {
+						if ($config['variable2id'] > 0 && $val2 !== null) {
 							$sensorData[$config['variable2id']][] = [
 								'TimeStamp' => $timestamp,
 								'Value' => $val2
