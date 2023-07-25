@@ -984,7 +984,7 @@ class AirQ extends IPSModule
 		$sensormapping = [];
 
 		foreach ($sensorlist as $sensor) {
-			if (!$sensor['Enabled'] || !in_array($sensor['Sensor'], AirQ::$StatusVars)) {
+			if (!$sensor['Enabled'] || in_array($sensor['Sensor'], AirQ::$StatusVars)) {
 				// Sensor disabled or is in StatusVars'
 				$this->SendDebug("StoreHistoricData", 'Sensor disabled for import: ' . $sensor['Sensor'], 0);
 				continue;
