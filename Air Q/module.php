@@ -1006,7 +1006,7 @@ class AirQ extends IPSModule
 					$item['variable2id'] = null;
 				}
 
-				$sensormapping[$sensor['Sensor']] = $item;
+				$sensormapping[$indentSensorValue] = $item;
 			}
 		}
 
@@ -1050,7 +1050,7 @@ class AirQ extends IPSModule
 
 		$changedVars = [];
 		foreach ($sensorData as $key => $value) {
-			$this->SendDebug("StoreHistoricData", 'Import for Sensor ID ' . $key, 0);
+			$this->SendDebug("StoreHistoricData", 'Import ' . count($value)  . ' Values for Sensor ID ' . $key, 0);
 
 			$result = AC_AddLoggedValues($archiveControlID, $key, $value);
 			if ($result) {
@@ -1329,8 +1329,9 @@ class AirQ extends IPSModule
 			$this->WriteAttributeString(AirQ::ATTRIB_LAST_FILE_IMPORTED, $file);
 			$this->WriteAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
 
-			$this->SendDebug("ImportFile", $file, 0);
 			$data = $this->GetFileContent($file, false);
+			$this->SendDebug("ImportFile", $file . ' DATA: ' . print_r($data,true), 0);
+
 			$totalRows = count($data);
 			if ($lastFileImported == $file && $lastFileRowImported > 0) {
 				$this->SendDebug("ImportFile", count($data) . ' Rows in File. Resuming import at Row ' . $lastFileRowImported, 0);
