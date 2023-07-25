@@ -112,7 +112,8 @@
             "Send Interval": "Sende Interval",
             "External URL for webhook": "Externe URL zum WebHook",
             "Configure AirQ to send data to WebHook": "Konfiguriere AirQ zum senden von Daten an den WebHook",
-            "Remove WebHook configuration from AirQ": "Entferne die WebHook Konfiguration vom AirQ"
+            "Remove WebHook configuration from AirQ": "Entferne die WebHook Konfiguration vom AirQ",
+            "Reset for imported file state successfull. Next time a Full Sync will be performed.": "Zurücksetzen des Import-Dateistatus war erfolgreich. Bei der nächsten Synchronisierung werden alle Dateien importiert."
         }
     }
 }

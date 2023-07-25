@@ -984,8 +984,9 @@ class AirQ extends IPSModule
 		$sensormapping = [];
 
 		foreach ($sensorlist as $sensor) {
-			if (!$sensor['Enabled'] || in_array($sensor['Sensor'], AirQ::$StatusVars)) {
+			if (!$sensor['Enabled'] || !in_array($sensor['Sensor'], AirQ::$StatusVars)) {
 				// Sensor disabled or is in StatusVars'
+				$this->SendDebug("StoreHistoricData", 'Sensor disabled for import: ' . $sensor['Sensor'], 0);
 				continue;
 			}
 
@@ -1042,11 +1043,15 @@ class AirQ extends IPSModule
 						}
 					}
 				}
+			}else{
+				$this->SendDebug("StoreHistoricData", 'Error: DeviceID mismatch', 0);
 			}
 		}
 
 		$changedVars = [];
 		foreach ($sensorData as $key => $value) {
+			$this->SendDebug("StoreHistoricData", 'Import for Sensor ID ' . $key, 0);
+
 			$result = AC_AddLoggedValues($archiveControlID, $key, $value);
 			if ($result) {
 				$changedVars[] = $key;
@@ -1250,6 +1255,7 @@ class AirQ extends IPSModule
 	{
 		$this->WriteAttributeString(AirQ::ATTRIB_LAST_FILE_IMPORTED, '0');
 		$this->WriteAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
+		print($this->Translate('Reset for imported file state successfull. Next time a Full Sync will be performed.'));
 	}
 	public function ImportAllFilesAsync()
 	{
@@ -1320,7 +1326,6 @@ class AirQ extends IPSModule
 			$this->SendDebug("ImportFile", 'Importing file ' . $count . ' of ' . $totalCount, 0);
 			$this->LogMessage('Importing Files: ' . $count . ' / ' . $totalCount, KL_NOTIFY);
 
-			//TODO: possible DEADLOCK somewhere in this block
 			$this->WriteAttributeString(AirQ::ATTRIB_LAST_FILE_IMPORTED, $file);
 			$this->WriteAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
 
