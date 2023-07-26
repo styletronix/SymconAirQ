@@ -808,11 +808,13 @@ class AirQ extends IPSModule
 
 		$avgs = [];
 
-		### Remove Seconds from end
+		### Remove Seconds from start and end
 		$date = getdate($end);
 		$end = mktime($date['hours'], $date['minutes'], 00, $date['mon'], $date['mday'], $date['year']);
+		$date = getdate($start);
+		$start = mktime($date['hours'], $date['minutes'], 00, $date['mon'], $date['mday'], $date['year']);
+		
 		$endtime = $end;
-
 		$diff = $end - $start;
 
 		#### Get minutes to previous full hour
