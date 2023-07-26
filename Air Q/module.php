@@ -649,7 +649,7 @@ class AirQ extends IPSModule
 						$sensor['FriendlyName'] . ' - ' . $this->Translate('Status'),
 						'SXAIRQ.Status'
 					);
-					$this->levelUp($newSeverity, $indentSensorStatus);
+					$this->levelUp($newSeverity, $indentSensorStatus,0);
 					$statusCreated = true;
 				}
 
@@ -679,31 +679,25 @@ class AirQ extends IPSModule
 						$sensor['FriendlyName'] . ' (' . $this->minuteTimeSpanToFriendlyName($limit['Timespan']) . ') - Status',
 						'SXAIRQ.Status'
 					);
-					$this->levelUp($newSeverity, $indentStatus);
+					$this->levelUp($newSeverity, $indentStatus,0);
 
 					$t = time();
 					if ($includeAggregated) {
 						$rollingAverage = @$this->GetAggregatedRollingAverage($SensorValueID, $t - ($limit['Timespan'] * 60), $t);
-					} else {
-						// Use existing value if aggregation is not selected
-						$rollingAverage = [
-							'Avg' => GetValue($variableID)
-						];
-					}
-
-					if ($rollingAverage) {
 						$value = $rollingAverage['Avg'];
-						if ($includeAggregated) {
+						if (!is_nan($value) && !is_infinite($value)) {
 							SetValue($variableID, $value);
 						}
-
-						if (
-							($limit['UpperLimit'] != 0 && $value > $limit['UpperLimit']) ||
-							($limit['LowerLimit'] != 0 && $value < $limit['LowerLimit'])
-						) {
-							$this->levelUp($newSeverity, $indentStatus, $limit['Severity']);
-							$this->levelUp($newSeverity, $indentSensorStatus, $limit['Severity']);
-						}
+					} else {
+						// Use existing value if aggregation is not selected
+						$value = GetValue($variableID);
+					}
+					if (
+						($limit['UpperLimit'] != 0 && $value > $limit['UpperLimit']) ||
+						($limit['LowerLimit'] != 0 && $value < $limit['LowerLimit'])
+					) {
+						$this->levelUp($newSeverity, $indentStatus, $limit['Severity']);
+						$this->levelUp($newSeverity, $indentSensorStatus, $limit['Severity']);
 					}
 				}
 			}
@@ -1000,7 +994,7 @@ class AirQ extends IPSModule
 			if ($item['variableid'] > 0 && AC_GetLoggingStatus($archiveControlID, $item['variableid'])) {
 				$sensorData[$item['variableid']] = [];
 
-				if ($item['variable2id']>0 && AC_GetLoggingStatus($archiveControlID, $item['variable2id'])) {
+				if ($item['variable2id'] > 0 && AC_GetLoggingStatus($archiveControlID, $item['variable2id'])) {
 					$sensorData[$item['variable2id']] = [];
 				}
 
@@ -1042,14 +1036,14 @@ class AirQ extends IPSModule
 						}
 					}
 				}
-			}else{
+			} else {
 				$this->SendDebug("StoreHistoricData", 'Error: DeviceID mismatch', 0);
 			}
 		}
 
 		$changedVars = [];
 		foreach ($sensorData as $key => $value) {
-			$this->SendDebug("StoreHistoricData", 'Import ' . count($value)  . ' Values for Sensor ID ' . $key, 0);
+			$this->SendDebug("StoreHistoricData", 'Import ' . count($value) . ' Values for Sensor ID ' . $key, 0);
 
 			$result = AC_AddLoggedValues($archiveControlID, $key, $value);
 			if ($result) {
@@ -1064,6 +1058,8 @@ class AirQ extends IPSModule
 		$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 
 		$this->SendDebug("StoreHistoricDataCompleted", 'starting reaggregation of ' . count($resultfromStore) . ' variables.', 0);
+
+		// TODO: Possible PHP THREAD DEADLOCK !!!!!!!!!!!!!! By crashing the ARCHIVE CONTROL ?????????
 		foreach ($resultfromStore as $id) {
 			AC_ReAggregateVariable($archiveControlID, $id);
 		}
@@ -1329,7 +1325,7 @@ class AirQ extends IPSModule
 			$this->WriteAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
 
 			$data = $this->GetFileContent($file, false);
-			$this->SendDebug("ImportFile", $file . ' DATA: ' . print_r($data,true), 0);
+			$this->SendDebug("ImportFile", $file . ' DATA: ' . print_r($data, true), 0);
 
 			$totalRows = count($data);
 			if ($lastFileImported == $file && $lastFileRowImported > 0) {
