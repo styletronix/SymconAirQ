@@ -611,8 +611,6 @@ class AirQ extends IPSModule
 				// Sensor disabled or is in StatusVars'
 				continue;
 			}
-			$statusCreated = false;
-			$newSensorSeverity = 0;
 
 			$indentSensorStatus = $sensor['Sensor'] . '_status';
 			$indentSensorValue = $sensor['Sensor'];
@@ -642,27 +640,24 @@ class AirQ extends IPSModule
 				}
 			}
 
+			$timespanProcessed = [];
 			foreach ($sensor['Limits'] as $limit) {
-				if (!$statusCreated && ($limit['UpperLimit'] != 0 || $limit['LowerLimit'] != 0)) {
+				if (!key_exists('sensorstatus', $timespanProcessed) && ($limit['UpperLimit'] != 0 || $limit['LowerLimit'] != 0)) {
 					$this->RegisterVariableInteger(
 						$indentSensorStatus,
 						$sensor['FriendlyName'] . ' - ' . $this->Translate('Status'),
 						'SXAIRQ.Status'
 					);
-					$this->levelUp($newSeverity, $indentSensorStatus,0);
-					$statusCreated = true;
+					$this->levelUp($newSeverity, $indentSensorStatus, 0);
+					$timespanProcessed['sensorstatus'] = null;
 				}
 
 				if ($limit['Timespan'] == 0) {
-					$variableID = $SensorValueID;
-
 					if (
 						($limit['UpperLimit'] != 0 && $currentValue > $limit['UpperLimit']) ||
 						($limit['LowerLimit'] != 0 && $currentValue < $limit['LowerLimit'])
 					) {
-						if ($limit['Severity'] > $newSeverity[$indentSensorStatus]) {
-							$newSeverity[$indentSensorStatus] = $limit['Severity'];
-						}
+						$this->levelUp($newSeverity, $indentSensorStatus, $limit['Severity']);
 					}
 
 				} else {
@@ -679,18 +674,25 @@ class AirQ extends IPSModule
 						$sensor['FriendlyName'] . ' (' . $this->minuteTimeSpanToFriendlyName($limit['Timespan']) . ') - Status',
 						'SXAIRQ.Status'
 					);
-					$this->levelUp($newSeverity, $indentStatus,0);
+					$this->levelUp($newSeverity, $indentStatus, 0);
 
 					$t = time();
-					if ($includeAggregated) {
+					if ($includeAggregated && !key_exists($limit['Timespan'], $timespanProcessed)) {
 						$rollingAverage = @$this->GetAggregatedRollingAverage($SensorValueID, $t - ($limit['Timespan'] * 60), $t);
 						$value = $rollingAverage['Avg'];
 						if (!is_nan($value) && !is_infinite($value)) {
 							SetValue($variableID, $value);
 						}
+						$timespanProcessed[$limit['Timespan']] = $value;
+
+					} elseif (key_exists($limit['Timespan'], $timespanProcessed)) {
+						$value = $timespanProcessed[$limit['Timespan']];
+
 					} else {
-						// Use existing value if aggregation is not selected
+						// Use existing value if aggregation is not selected or already processed
+
 						$value = GetValue($variableID);
+						$timespanProcessed[$limit['Timespan']] = $value;
 					}
 					if (
 						($limit['UpperLimit'] != 0 && $value > $limit['UpperLimit']) ||
@@ -700,6 +702,8 @@ class AirQ extends IPSModule
 						$this->levelUp($newSeverity, $indentSensorStatus, $limit['Severity']);
 					}
 				}
+
+				$timespanProcessed[] = $limit['Timespan'];
 			}
 		}
 
@@ -813,7 +817,7 @@ class AirQ extends IPSModule
 		$end = mktime($date['hours'], $date['minutes'], 00, $date['mon'], $date['mday'], $date['year']);
 		$date = getdate($start);
 		$start = mktime($date['hours'], $date['minutes'], 00, $date['mon'], $date['mday'], $date['year']);
-		
+
 		$endtime = $end;
 		$diff = $end - $start;
 
