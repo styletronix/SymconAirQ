@@ -274,7 +274,7 @@
         {
             "type": "Button",
             "caption": "Import Data from AirQ (Science version only)",
-            "onClick": "SXAIRQ_ImportAllFilesAsync($id);"
+            "onClick": "SXAIRQ_ImportAllFiles($id);"
         },
         {
             "type": "PopupAlert",
