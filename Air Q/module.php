@@ -1293,24 +1293,24 @@ class AirQ extends IPSModule
 		$this->WriteAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
 		print($this->Translate('Reset for imported file state successfull. Next time a Full Sync will be performed.'));
 	}
-	public function ImportAllFilesAsync()
-	{
-		$this->RegisterOnceTimer(AirQ::TIMER_UPDATEHISTORICDATA . '_now', 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "' . AirQ::TIMER_UPDATEHISTORICDATA . '");');
 
-		//echo $this->Translate('All Files will be imported from AirQ in Background. You can see the Progress in Messages.');
-	}
 	public function ImportAllFiles(int $limit = 100)
 	{
+		$this->UpdateFormField('ProgressAlert', 'visible', true);
+		$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Prepare Import'));
+
 		if (!IPS_SemaphoreEnter('AirQImportFile', 1000)) {
-			echo $this->Translate('Another import is already running');
+			$txt = $this->Translate('Another import is already running');
+			$this->UpdateFormField('ImportProgress', 'caption', $txt);
+			echo $txt;
 			return false;
 		}
 
 		try {
 			$this->UpdateFormField('ImportProgress', 'indeterminate', true);
-			$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Prepare Import'));
+			
 			$this->UpdateFormField('ImportProgress', 'current', 0);
-			$this->UpdateFormField('ProgressAlert', 'visible', true);
+			
 
 			$allFiles = [];
 			$path = '';
