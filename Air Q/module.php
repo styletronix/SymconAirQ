@@ -1095,6 +1095,8 @@ class AirQ extends IPSModule
 			$result = AC_AddLoggedValues($archiveControlID, $key, $value);
 			if ($result) {
 				$changedVars[] = $key;
+			}else{
+				return false;
 			}
 		}
 		$changedVars = array_values(array_unique($changedVars));
@@ -1126,8 +1128,8 @@ class AirQ extends IPSModule
 				if ($queue) {
 					$ids = json_decode($queue, true);
 					if (count($ids) > 0) {
-						AC_ReAggregateVariable($archiveControlID, array_shift($queue));
-						$this->WriteAttributeString(AirQ::ATTRIB_REAGGREGATION_QUEUE, json_encode(($queue)));
+						AC_ReAggregateVariable($archiveControlID, array_shift($ids));
+						$this->WriteAttributeString(AirQ::ATTRIB_REAGGREGATION_QUEUE, json_encode($ids));
 					} else {
 						$this->SetTimerInterval(AirQ::TIMER_REAGGREAGATE_QUEUE, 0);
 					}
@@ -1441,7 +1443,11 @@ class AirQ extends IPSModule
 
 				$this->SendDebug('ImportFile', 'Storing ' . $newRowsCount . ' Rows...', 0);
 				$tempResult = $this->StoreHistoricData($data);
-
+				if (!$tempResult){
+					$this->SendDebug('ImportFile', 'Import failed ', 0);
+					echo 'Import failed.';
+					break;
+				}
 				$this->SendDebug('ImportFile', 'Total of ' . count($tempResult) . ' Variables affected.', 0);
 				$totalRows += $newRowsCount;
 
