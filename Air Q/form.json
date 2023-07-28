@@ -258,6 +258,11 @@
         },
         {
             "type": "Button",
+            "caption": "Sync variable names with configuration.",
+            "onClick": "SXAIRQ_UpdateVariableNames($id);"
+        },
+        {
+            "type": "Button",
             "caption": "Configure AirQ to send data to WebHook",
             "onClick": "SXAIRQ_SetWebHookConfig($id);"
         },

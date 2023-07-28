@@ -369,6 +369,41 @@ class AirQ extends IPSModule
 			}
 		}
 	}
+	public function UpdateVariableNames()
+	{
+		$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
+
+		foreach ($sensorlist as $sensor) {
+			$indentSensorStatus = $sensor['Sensor'] . '_status';
+			$indentSensorValue = $sensor['Sensor'];
+
+			$SensorValueID = $this->GetIDForIdent($indentSensorValue);
+			if ($SensorValueID) {
+				IPS_SetName($SensorValueID, $sensor['FriendlyName']);
+			}
+			$SensorValueID = $this->GetIDForIdent($indentSensorValue . '_dev');
+			if ($SensorValueID) {
+				IPS_SetName($SensorValueID, $sensor['FriendlyName'] . ' (' . $this->Translate('deviation') . ')');
+			}
+
+			$SensorValueID = $this->GetIDForIdent($indentSensorValue . '_status');
+			if ($SensorValueID) {
+				IPS_SetName($SensorValueID, $sensor['FriendlyName'] . ' - ' . $this->Translate('Status'));
+			}
+
+			foreach ($sensor['Limits'] as $limit) {
+				$SensorValueID = $this->GetIDForIdent($sensor['Sensor'] . '_' . $limit['Timespan']);
+				if ($SensorValueID) {
+					IPS_SetName($SensorValueID, $sensor['FriendlyName'] . ' (' . $this->minuteTimeSpanToFriendlyName($limit['Timespan']) . ')');
+				}
+
+				$SensorValueID = $this->GetIDForIdent($sensor['Sensor'] . '_' . $limit['Timespan'] . '_status');
+				if ($SensorValueID) {
+					IPS_SetName($SensorValueID, $sensor['FriendlyName'] . ' (' . $this->minuteTimeSpanToFriendlyName($limit['Timespan']) . ') - Status');
+				}
+			}
+		}
+	}
 	private function GetSensorInfoBySensorID($config, $sensorid)
 	{
 		foreach ($config['SensorInfo'] as $key => $val) {
