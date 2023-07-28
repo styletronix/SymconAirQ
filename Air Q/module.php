@@ -7,6 +7,7 @@ class AirQ extends IPSModule
 	const ATTRIB_LAST_FILE_ROW_IMPORTED = 'lastFileRowImported';
 	const ATTRIB_NEWID = 'NewID';
 	const ATTRIB_DEVICECONFIG = 'DeviceConfig';
+	const ATTRIB_REAGGREGATION_QUEUE = 'ReaggregationQueue';
 
 	const IDENT_DEVICEID = 'DeviceID';
 	const IDENT_HTML_LIMITS = 'HtmlLimits';
@@ -14,7 +15,9 @@ class AirQ extends IPSModule
 	const TIMER_UPDATE = 'update';
 	const TIMER_UPDATEAVERAGE = 'updateAverage';
 	const TIMER_UPDATEHISTORICDATA = 'updateHistoricData';
+	const TIMER_REAGGREAGATE_QUEUE = 'processReaggregateQueue';
 
+	const SEMAPHORE_REAGGREGATIONQUEUE = 'AirQ_ReaggregationQueue';
 	const PROP_URL = 'url';
 
 	private static $StatusVars = [
@@ -208,6 +211,7 @@ class AirQ extends IPSModule
 		$this->RegisterAttributeString(AirQ::ATTRIB_DEVICECONFIG, '');
 		$this->RegisterAttributeString(AirQ::ATTRIB_LAST_FILE_IMPORTED, '');
 		$this->RegisterAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
+		$this->RegisterAttributeString(AirQ::ATTRIB_REAGGREGATION_QUEUE, '');
 
 		$this->RegisterVariableInteger('timestamp', $this->Translate('Timestamp'), '~UnixTimestamp');
 		$this->RegisterVariableString(AirQ::IDENT_DEVICEID, $this->Translate('DeviceID'));
@@ -215,9 +219,11 @@ class AirQ extends IPSModule
 		$this->RegisterVariableInteger('uptime', $this->Translate('Uptime'), '');
 		$this->RegisterVariableInteger('measuretime', $this->Translate('Measuretime'), '');
 		$this->RegisterVariableString(AirQ::IDENT_HTML_LIMITS, $this->Translate('HTML-Limits'), '');
+
 		$this->RegisterTimer(AirQ::TIMER_UPDATE, ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refresh') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "' . AirQ::TIMER_UPDATE . '");');
 		$this->RegisterTimer(AirQ::TIMER_UPDATEHISTORICDATA, 0, 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "' . AirQ::TIMER_UPDATEHISTORICDATA . '");');
 		$this->RegisterTimer(AirQ::TIMER_UPDATEAVERAGE, ($this->ReadPropertyBoolean('active') ? $this->ReadPropertyInteger('refreshAverage') * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "' . AirQ::TIMER_UPDATEAVERAGE . '");');
+		$this->RegisterTimer(AirQ::TIMER_REAGGREAGATE_QUEUE, 5000, 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "' . AirQ::TIMER_REAGGREAGATE_QUEUE . '");');
 	}
 
 	public function Destroy()
@@ -1100,9 +1106,35 @@ class AirQ extends IPSModule
 
 		$this->SendDebug("StoreHistoricDataCompleted", 'starting reaggregation of ' . count($resultfromStore) . ' variables.', 0);
 
-		// TODO: Possible PHP THREAD DEADLOCK !!!!!!!!!!!!!! By crashing the ARCHIVE CONTROL ?????????
-		foreach ($resultfromStore as $id) {
-			AC_ReAggregateVariable($archiveControlID, $id);
+		if (count($resultfromStore) > 0) {
+			$queue = $this->ReadAttributeString(AirQ::ATTRIB_REAGGREGATION_QUEUE);
+			if ($queue) {
+				$queue = json_decode($queue, true);
+				$resultfromStore = array_unique(array_merge($queue, $resultfromStore));
+			}
+			$this->WriteAttributeString(AirQ::ATTRIB_REAGGREGATION_QUEUE, json_encode($resultfromStore));
+			$this->SetTimerInterval(AirQ::TIMER_REAGGREAGATE_QUEUE, 5000);
+		}
+	}
+
+	private function ReaggregationQueue_FetchNext()
+	{
+		if (IPS_SemaphoreEnter(AirQ::SEMAPHORE_REAGGREGATIONQUEUE, 1000)) {
+			try {
+				$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
+				$queue = $this->ReadAttributeString(AirQ::ATTRIB_REAGGREGATION_QUEUE);
+				if ($queue) {
+					$ids = json_decode($queue, true);
+					if (count($ids) > 0) {
+						AC_ReAggregateVariable($archiveControlID, array_shift($queue));
+						$this->WriteAttributeString(AirQ::ATTRIB_REAGGREGATION_QUEUE, json_encode(($queue)));
+					} else {
+						$this->SetTimerInterval(AirQ::TIMER_REAGGREAGATE_QUEUE, 0);
+					}
+				}
+			} finally {
+				IPS_SemaphoreLeave(AirQ::SEMAPHORE_REAGGREGATIONQUEUE);
+			}
 		}
 	}
 
@@ -1255,6 +1287,10 @@ class AirQ extends IPSModule
 				$this->ImportAllFiles(100);
 				break;
 
+			case AirQ::TIMER_REAGGREAGATE_QUEUE:
+				$this->ReaggregationQueue_FetchNext();
+				break;
+
 			default:
 				throw new Exception("Invalid TimerCallback");
 		}
@@ -1308,9 +1344,9 @@ class AirQ extends IPSModule
 
 		try {
 			$this->UpdateFormField('ImportProgress', 'indeterminate', true);
-			
+
 			$this->UpdateFormField('ImportProgress', 'current', 0);
-			
+
 
 			$allFiles = [];
 			$path = '';
@@ -1329,7 +1365,7 @@ class AirQ extends IPSModule
 			$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Get Filelist from AirQ'));
 			$this->SendDebug('ImportFile', 'Reading path recursive ' . $path, 0);
 			$data = $this->GetFileList($path, false);
-			if (!$data){
+			if (!$data) {
 				$txt = $this->Translate('Could not connect to AirQ');
 				$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Reaggregate Variables'));
 				echo $txt;
@@ -1431,7 +1467,7 @@ class AirQ extends IPSModule
 			return true;
 
 		} catch (Exception $ex) {
-			echo $this->Translate('An unexpected Exception occured'). ': ' . $ex->getMessage();
+			echo $this->Translate('An unexpected Exception occured') . ': ' . $ex->getMessage();
 			return false;
 
 		} finally {
