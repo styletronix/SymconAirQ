@@ -258,7 +258,7 @@
         },
         {
             "type": "Button",
-            "caption": "Sync variable names with configuration.",
+            "caption": "Sync variable names with configuration",
             "onClick": "SXAIRQ_UpdateVariableNames($id);"
         },
         {
@@ -275,6 +275,26 @@
             "type": "Button",
             "caption": "Import Data from AirQ (Science version only)",
             "onClick": "SXAIRQ_ImportAllFilesAsync($id);"
+        },
+        {
+            "type": "PopupAlert",
+            "name": "ProgressAlert",
+            "visible": false,
+            "popup": {
+                "closeCaption": "Ok",
+                "items": [
+                    {
+                        "type": "ProgressBar",
+                        "name": "ImportProgress",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "current": 0,
+                        "caption": "",
+                        "visible": true,
+                        "indeterminate": true
+                    }
+                ]
+            }
         },
         {
             "type": "Button",

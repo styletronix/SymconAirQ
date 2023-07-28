@@ -377,27 +377,27 @@ class AirQ extends IPSModule
 			$indentSensorStatus = $sensor['Sensor'] . '_status';
 			$indentSensorValue = $sensor['Sensor'];
 
-			$SensorValueID = $this->GetIDForIdent($indentSensorValue);
+			$SensorValueID = @$this->GetIDForIdent($indentSensorValue);
 			if ($SensorValueID) {
 				IPS_SetName($SensorValueID, $sensor['FriendlyName']);
 			}
-			$SensorValueID = $this->GetIDForIdent($indentSensorValue . '_dev');
+			$SensorValueID = @$this->GetIDForIdent($indentSensorValue . '_dev');
 			if ($SensorValueID) {
 				IPS_SetName($SensorValueID, $sensor['FriendlyName'] . ' (' . $this->Translate('deviation') . ')');
 			}
 
-			$SensorValueID = $this->GetIDForIdent($indentSensorValue . '_status');
+			$SensorValueID = @$this->GetIDForIdent($indentSensorValue . '_status');
 			if ($SensorValueID) {
 				IPS_SetName($SensorValueID, $sensor['FriendlyName'] . ' - ' . $this->Translate('Status'));
 			}
 
 			foreach ($sensor['Limits'] as $limit) {
-				$SensorValueID = $this->GetIDForIdent($sensor['Sensor'] . '_' . $limit['Timespan']);
+				$SensorValueID = @$this->GetIDForIdent($sensor['Sensor'] . '_' . $limit['Timespan']);
 				if ($SensorValueID) {
 					IPS_SetName($SensorValueID, $sensor['FriendlyName'] . ' (' . $this->minuteTimeSpanToFriendlyName($limit['Timespan']) . ')');
 				}
 
-				$SensorValueID = $this->GetIDForIdent($sensor['Sensor'] . '_' . $limit['Timespan'] . '_status');
+				$SensorValueID = @$this->GetIDForIdent($sensor['Sensor'] . '_' . $limit['Timespan'] . '_status');
 				if ($SensorValueID) {
 					IPS_SetName($SensorValueID, $sensor['FriendlyName'] . ' (' . $this->minuteTimeSpanToFriendlyName($limit['Timespan']) . ') - Status');
 				}
@@ -1297,99 +1297,146 @@ class AirQ extends IPSModule
 	{
 		$this->RegisterOnceTimer(AirQ::TIMER_UPDATEHISTORICDATA . '_now', 'IPS_RequestAction($_IPS["TARGET"], "TimerCallback", "' . AirQ::TIMER_UPDATEHISTORICDATA . '");');
 
-		echo $this->Translate('All Files will be imported from AirQ in Background. You can see the Progress in Messages.');
+		//echo $this->Translate('All Files will be imported from AirQ in Background. You can see the Progress in Messages.');
 	}
 	public function ImportAllFiles(int $limit = 100)
 	{
-		$allFiles = [];
-		$path = '';
-
-		$lastFileImported = $this->ReadAttributeString(AirQ::ATTRIB_LAST_FILE_IMPORTED);
-		$lastFileRowImported = $this->ReadAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED);
-
-		if (!$lastFileImported) {
-			$lastFileImported = '0';
-			$lastFileRowImported = 0;
-		}
-		if (!$lastFileImported) {
-			$lastFileRowImported = 0;
+		if (!IPS_SemaphoreEnter('AirQImportFile', 1000)) {
+			echo $this->Translate('Another import is already running');
+			return false;
 		}
 
-		$this->SendDebug("ImportFile", 'Reading path recursive ' . $path, 0);
-		$data = $this->GetFileList($path, false);
-		$skippedPaths = 0;
-		foreach ($data as $year) {
-			if (is_numeric($year)) {
-				if ($this->IsPathLowerThan((string) $year, $lastFileImported)) {
-					$skippedPaths++;
-					continue;
-				}
-				$months = $this->GetFileList((string) $year, false);
-				foreach ($months as $month) {
-					if ($this->IsPathLowerThan($year . '/' . $month, $lastFileImported)) {
+		try {
+			$this->UpdateFormField('ImportProgress', 'indeterminate', true);
+			$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Prepare Import'));
+			$this->UpdateFormField('ImportProgress', 'current', 0);
+			$this->UpdateFormField('ProgressAlert', 'visible', true);
+
+			$allFiles = [];
+			$path = '';
+
+			$lastFileImported = $this->ReadAttributeString(AirQ::ATTRIB_LAST_FILE_IMPORTED);
+			$lastFileRowImported = $this->ReadAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED);
+
+			if (!$lastFileImported) {
+				$lastFileImported = '0';
+				$lastFileRowImported = 0;
+			}
+			if (!$lastFileImported) {
+				$lastFileRowImported = 0;
+			}
+
+			$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Get Filelist from AirQ'));
+			$this->SendDebug('ImportFile', 'Reading path recursive ' . $path, 0);
+			$data = $this->GetFileList($path, false);
+			if (!$data){
+				$txt = $this->Translate('Could not connect to AirQ');
+				$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Reaggregate Variables'));
+				echo $txt;
+
+				return;
+			}
+
+			$skippedPaths = 0;
+			foreach ($data as $year) {
+				if (is_numeric($year)) {
+					if ($this->IsPathLowerThan((string) $year, $lastFileImported)) {
 						$skippedPaths++;
 						continue;
 					}
-
-					$days = $this->GetFileList($year . '/' . $month, false);
-					foreach ($days as $day) {
-						if ($this->IsPathLowerThan($year . '/' . $month . '/' . $day, $lastFileImported)) {
+					$months = $this->GetFileList((string) $year, false);
+					foreach ($months as $month) {
+						if ($this->IsPathLowerThan($year . '/' . $month, $lastFileImported)) {
 							$skippedPaths++;
 							continue;
 						}
 
-						$files = $this->GetFileList($year . '/' . $month . '/' . $day, false);
-						foreach ($files as $file) {
-							if ($this->IsPathLowerThan($year . '/' . $month . '/' . $day . '/' . $file, $lastFileImported)) {
+						$days = $this->GetFileList($year . '/' . $month, false);
+						foreach ($days as $day) {
+							if ($this->IsPathLowerThan($year . '/' . $month . '/' . $day, $lastFileImported)) {
 								$skippedPaths++;
 								continue;
 							}
-							$allFiles[] = $year . '/' . $month . '/' . $day . '/' . $file;
+
+							$files = $this->GetFileList($year . '/' . $month . '/' . $day, false);
+							foreach ($files as $file) {
+								if ($this->IsPathLowerThan($year . '/' . $month . '/' . $day . '/' . $file, $lastFileImported)) {
+									$skippedPaths++;
+									continue;
+								}
+								$allFiles[] = $year . '/' . $month . '/' . $day . '/' . $file;
+							}
 						}
 					}
 				}
 			}
-		}
 
-		$importResult = [];
-		$count = 0;
-		$totalCount = count($allFiles);
+			$importResult = [];
+			$count = 0;
+			$totalCount = count($allFiles);
+			$totalRows = 0;
 
-		$this->SendDebug("ImportFile", 'Found ' . $totalCount . ' files to import. Skipped ' . $skippedPaths . ' files and directories.', 0);
+			$this->SendDebug('ImportFile', 'Found ' . $totalCount . ' files to import. Skipped ' . $skippedPaths . ' files and directories.', 0);
 
-		foreach ($allFiles as $file) {
-			$count++;
-			$this->SendDebug("ImportFile", 'Importing file ' . $count . ' of ' . $totalCount, 0);
-			$this->LogMessage('Importing Files: ' . $count . ' / ' . $totalCount, KL_NOTIFY);
+			$this->UpdateFormField('ImportProgress', 'maximum', $totalCount);
+			$this->UpdateFormField('ImportProgress', 'indeterminate', false);
 
-			$this->WriteAttributeString(AirQ::ATTRIB_LAST_FILE_IMPORTED, $file);
-			$this->WriteAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
+			foreach ($allFiles as $file) {
+				$count++;
 
-			$data = $this->GetFileContent($file, false);
-			$this->SendDebug("ImportFile", $file . ' DATA: ' . print_r($data, true), 0);
+				$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Import file') . ' ' . $count . '//' . $totalCount);
+				$this->UpdateFormField('ImportProgress', 'current', $count);
 
-			$totalRows = count($data);
-			if ($lastFileImported == $file && $lastFileRowImported > 0) {
-				$this->SendDebug("ImportFile", count($data) . ' Rows in File. Resuming import at Row ' . $lastFileRowImported, 0);
-				$data = array_slice($data, $lastFileRowImported);
+				$this->SendDebug('ImportFile', 'Importing file ' . $count . ' of ' . $totalCount, 0);
+				$this->LogMessage('Importing Files: ' . $count . ' / ' . $totalCount, KL_NOTIFY);
+
+				$this->WriteAttributeString(AirQ::ATTRIB_LAST_FILE_IMPORTED, $file);
+				$this->WriteAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED, 0);
+
+				$data = $this->GetFileContent($file, false);
+				$this->SendDebug('ImportFile', $file . ' DATA: ' . print_r($data, true), 0);
+
+				$newLastFileRowImported = count($data);
+				if ($lastFileImported == $file && $lastFileRowImported > 0) {
+					$this->SendDebug('ImportFile', count($data) . ' Rows in File. Resuming import at Row ' . $lastFileRowImported, 0);
+					$data = array_slice($data, $lastFileRowImported);
+				}
+				$newRowsCount = count($data);
+
+				$this->SendDebug('ImportFile', 'Storing ' . $newRowsCount . ' Rows...', 0);
+				$tempResult = $this->StoreHistoricData($data);
+
+				$this->SendDebug('ImportFile', 'Total of ' . count($tempResult) . ' Variables affected.', 0);
+				$totalRows += $newRowsCount;
+
+				$this->WriteAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED, $newLastFileRowImported);
+
+				$importResult = array_unique(array_merge($importResult, $tempResult));
+
+				if ($count >= $limit) {
+					$this->LogMessage('Limit of ' . $limit . ' files per Import reached.', KL_NOTIFY);
+					$this->SendDebug('ImportFile', 'Limit of ' . $limit . ' files per Import reached.', 0);
+					$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Limit of') . ' ' . $limit . ' ' . $this->Translate('files per Import reached'));
+					break;
+				}
 			}
 
-			$this->SendDebug("ImportFile", 'Storing ' . count($data) . ' Rows...', 0);
-			$tempResult = $this->StoreHistoricData($data);
-			$this->SendDebug("ImportFile", 'Total of ' . count($tempResult) . ' Variables affected.', 0);
+			$this->UpdateFormField('ImportProgress', 'indeterminate', true);
+			$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Reaggregate Variables'));
 
-			$this->WriteAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED, $totalRows);
+			$this->StoreHistoricDataCompleted($importResult);
 
-			$importResult = array_unique(array_merge($importResult, $tempResult));
+			$this->UpdateFormField('ImportProgress', 'indeterminate', false);
+			$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Import of') . ' ' . $totalRows . ' ' . $this->Translate('rows successfull'));
+			return true;
 
-			if ($count >= $limit) {
-				$this->LogMessage('Limit of ' . $limit . ' files per Import reached.', KL_NOTIFY);
-				$this->SendDebug("ImportFile", 'Limit of ' . $limit . ' files per Import reached.', 0);
-				break;
-			}
+		} catch (Exception $ex) {
+			echo $this->Translate('An unexpected Exception occured'). ': ' . $ex->getMessage();
+			return false;
+
+		} finally {
+			IPS_SemaphoreLeave('AirQImportFile');
 		}
-
-		$this->StoreHistoricDataCompleted($importResult);
 	}
 }
 ?>
