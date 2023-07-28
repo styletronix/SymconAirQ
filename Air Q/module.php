@@ -313,7 +313,7 @@ class AirQ extends IPSModule
 			$hookId = IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
 			if (!$hookId) {
 				$hookId = IPS_CreateInstance("{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}");
-				IPS_SetName($hookId, "AirQ WebHook"); // Instanz benennen
+				IPS_SetName($hookId, "AirQ WebHook");
 				IPS_ApplyChanges($hookId);
 			}
 		}
