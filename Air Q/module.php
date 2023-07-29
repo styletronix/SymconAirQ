@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-class AirQ extends IPSModule
+	class AirQ extends IPSModule
 {
 	const ATTRIB_LAST_FILE_IMPORTED = 'lastFileImported';
 	const ATTRIB_LAST_FILE_ROW_IMPORTED = 'lastFileRowImported';
@@ -1322,7 +1322,7 @@ class AirQ extends IPSModule
 	}
 	public function ImportAllFiles(int $limit = 100)
 	{
-		ini_set('max_execution_time', 1200); // 20 Minuten... Kann schon mal vorkommen bei vielen Dateien.
+		ini_set('max_execution_time', '1200'); // 20 Minuten... Kann schon mal vorkommen bei vielen Dateien.
 
 		$this->UpdateFormField('ProgressAlert', 'visible', true);
 		$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Prepare Import'));
