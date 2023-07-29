@@ -1,8 +1,13 @@
 <?php
 
 declare(strict_types=1);
-	class AirQ extends IPSModule
+class AirQ extends IPSModule
 {
+	// REaggragation führt oft zu einem Dedlock des Archive Controls... Und somit aller Module und Scripts die darauf zugreifen.
+	// Ursache bisher unklar.
+	const DEBUG_DoNotReaggreagae = true;
+
+
 	const ATTRIB_LAST_FILE_IMPORTED = 'lastFileImported';
 	const ATTRIB_LAST_FILE_ROW_IMPORTED = 'lastFileRowImported';
 	const ATTRIB_NEWID = 'NewID';
@@ -1107,7 +1112,7 @@ declare(strict_types=1);
 			$result = AC_AddLoggedValues($archiveControlID, $key, $value);
 			if ($result) {
 				$changedVars[] = $key;
-			}else{
+			} else {
 				return false;
 			}
 		}
@@ -1116,16 +1121,19 @@ declare(strict_types=1);
 	}
 	public function StoreHistoricDataCompleted(array $resultfromStore)
 	{
+		if (AirQ::DEBUG_DoNotReaggreagae) {
+			return;
+		}
+
 		$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
-
 		$this->SendDebug("StoreHistoricDataCompleted", 'starting reaggregation of ' . count($resultfromStore) . ' variables.', 0);
-
 		if (count($resultfromStore) > 0) {
 			foreach ($resultfromStore as $id)
-			//TODO: Find reason for random DEADLOCK of Archive Control !!!
-			AC_ReAggregateVariable($archiveControlID, $id);
+				//TODO: Find reason for random DEADLOCK of Archive Control !!!
+				AC_ReAggregateVariable($archiveControlID, $id);
 
 		}
+
 	}
 
 
@@ -1317,7 +1325,8 @@ declare(strict_types=1);
 		print($this->Translate('Reset for imported file state successfull. Next time a Full Sync will be performed.'));
 	}
 
-	public function ImportAllFiles_Cancel(){
+	public function ImportAllFiles_Cancel()
+	{
 		$this->WriteAttributeBoolean(AirQ::ATTRIB_IMPORT_CANCEL, true);
 	}
 	public function ImportAllFiles(int $limit = 100)
@@ -1430,7 +1439,7 @@ declare(strict_types=1);
 
 			foreach ($allFiles as $file) {
 				$count++;
-				if ($this->ReadAttributeBoolean(AirQ::ATTRIB_IMPORT_CANCEL)){
+				if ($this->ReadAttributeBoolean(AirQ::ATTRIB_IMPORT_CANCEL)) {
 					$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Import cancelled'));
 					break;
 				}
@@ -1455,7 +1464,7 @@ declare(strict_types=1);
 
 				$this->SendDebug('ImportFile', 'Storing ' . $newRowsCount . ' Rows...', 0);
 				$tempResult = $this->StoreHistoricData($data);
-				if (!$tempResult){
+				if (!$tempResult) {
 					$this->SendDebug('ImportFile', 'Import failed ', 0);
 					echo 'Import failed.';
 					break;
@@ -1489,7 +1498,7 @@ declare(strict_types=1);
 				return false;
 			}
 
-			
+
 			return true;
 
 		} catch (Exception $ex) {
