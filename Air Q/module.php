@@ -1128,12 +1128,11 @@ class AirQ extends IPSModule
 		$archiveControlID = IPS_GetInstanceListByModuleID('{43192F0B-135B-4CE7-A0A7-1475603F3060}')[0];
 		$this->SendDebug("StoreHistoricDataCompleted", 'starting reaggregation of ' . count($resultfromStore) . ' variables.', 0);
 		if (count($resultfromStore) > 0) {
-			foreach ($resultfromStore as $id)
+			foreach ($resultfromStore as $id) {
 				//TODO: Find reason for random DEADLOCK of Archive Control !!!
 				AC_ReAggregateVariable($archiveControlID, $id);
-
+			}
 		}
-
 	}
 
 
