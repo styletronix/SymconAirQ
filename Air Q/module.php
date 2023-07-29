@@ -264,7 +264,7 @@ class AirQ extends IPSModule
 
 			$json = $this->getDataFromUrl($url);
 			$this->SendDebug("1. getDataFromUrl", $json, 0);
-			if (!$json) {
+			if ($json === null) {
 				echo $this->Translate('Could not get data from device.');
 				return false;
 			}
@@ -351,6 +351,10 @@ class AirQ extends IPSModule
 	public function UpdateSensorProfiles()
 	{
 		$data = $this->GetDeviceConfig();
+		if ($data === null) {
+			return false;
+		}
+
 		$sensors = $data['sensors'];
 
 		foreach ($sensors as $sensor) {
@@ -391,6 +395,7 @@ class AirQ extends IPSModule
 				}
 			}
 		}
+		return true;
 	}
 	public function UpdateVariableNames()
 	{
@@ -504,6 +509,10 @@ class AirQ extends IPSModule
 
 		try {
 			$json = $this->getDataFromUrl($url);
+			if ($json === null) {
+				$this->SetStatus(201);
+				return null;
+			}
 			$this->SendDebug("getDataFromUrl", $json, 0);
 		} catch (Exception $ex) {
 			$this->SetStatus(201);
@@ -588,7 +597,7 @@ class AirQ extends IPSModule
 	public function Update(bool $includeAggregated = false)
 	{
 		$data = $this->GetDataDecoded();
-		if ($data) {
+		if ($data !== null) {
 			$this->WriteSensorDataValues($data, $includeAggregated);
 			$this->WriteStatusValues($data);
 
@@ -806,14 +815,22 @@ class AirQ extends IPSModule
 	{
 
 		$ch = curl_init();
-		$timeout = 5;
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-		curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; MSIE 7.0; Windows NT 6.0; de-DE)");
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+		//curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; MSIE 7.0; Windows NT 6.0; de-DE)");
+
 		$data = curl_exec($ch);
+		$curl_errno = curl_errno($ch);
+		//$curl_error = curl_error($ch);
 		curl_close($ch);
-		return $data;
+
+		if ($curl_errno > 0) {
+			return null;
+		} else {
+			return $data;
+		}
 	}
 	private function postDataToUrl(string $url, $data)
 	{
@@ -1006,7 +1023,7 @@ class AirQ extends IPSModule
 	public function GetDeviceConfig()
 	{
 		$config = $this->GetDataDecoded('/config');
-		if ($config) {
+		if ($config !== null) {
 			$this->WriteAttributeString(AirQ::ATTRIB_DEVICECONFIG, json_encode($config));
 		}
 		return $config;
@@ -1152,9 +1169,13 @@ class AirQ extends IPSModule
 		$this->SendDebug("GetFileList", 'URL: ' . $url, 0);
 
 		$encrypted = $this->getDataFromUrl($url);
+		if ($encrypted === null) {
+			$this->SetStatus(201);
+			return null;
+		}
 		$this->SendDebug("GetFileList", 'encrypted: ' . $encrypted, 0);
 		if ($encrypted == '{}') {
-			return null;
+			return [];
 		}
 
 		$decrypted = $this->decryptString($encrypted, $pw);
@@ -1174,6 +1195,9 @@ class AirQ extends IPSModule
 		$this->SendDebug("GetFileList", 'URL: ' . $url, 0);
 
 		$encrypted = $this->getDataFromUrl($url);
+		if ($encrypted === null) {
+			return null;
+		}
 		$this->SendDebug("GetFileContent", 'encrypted: ' . $encrypted, 0);
 
 		$result = [];
@@ -1201,31 +1225,34 @@ class AirQ extends IPSModule
 	public function UpdateSensorList()
 	{
 		$data = $this->GetDataDecoded();
-		if ($data) {
-			$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
+		if ($data === null) {
+			return false;
+		}
 
-			foreach ($data as $key => $val) {
-				if (!in_array($key, AirQ::$StatusVars)) {
-					$found = false;
-					foreach ($sensorlist as $sensor) {
-						if ($sensor['Sensor'] == $key) {
-							$found = true;
-							break;
-						}
-					}
-					if (!$found) {
-						$sensorlist[] = [
-							"Sensor" => $key,
-							"FriendlyName" => $this->GetFriendlySensorName($key),
-							"Enabled" => false,
-							"Limits" => []
-						];
+		$sensorlist = json_decode($this->ReadPropertyString("Sensors"), true);
+
+		foreach ($data as $key => $val) {
+			if (!in_array($key, AirQ::$StatusVars)) {
+				$found = false;
+				foreach ($sensorlist as $sensor) {
+					if ($sensor['Sensor'] == $key) {
+						$found = true;
+						break;
 					}
 				}
+				if (!$found) {
+					$sensorlist[] = [
+						"Sensor" => $key,
+						"FriendlyName" => $this->GetFriendlySensorName($key),
+						"Enabled" => false,
+						"Limits" => []
+					];
+				}
 			}
-
-			$this->UpdateFormField(AirQ::PROP_SENSORS, 'values', json_encode($sensorlist));
 		}
+
+		$this->UpdateFormField(AirQ::PROP_SENSORS, 'values', json_encode($sensorlist));
+		return true;
 	}
 	/**
 	 * Decrypt a String with AES256
@@ -1282,7 +1309,7 @@ class AirQ extends IPSModule
 				break;
 
 			case AirQ::TIMER_UPDATEHISTORICDATA:
-				$this->ImportAllFiles(100);
+				$this->ImportAllFiles(200);
 				break;
 
 			default:
@@ -1343,9 +1370,7 @@ class AirQ extends IPSModule
 		try {
 			$this->WriteAttributeBoolean(AirQ::ATTRIB_IMPORT_CANCEL, false);
 			$this->UpdateFormField('ImportProgress', 'indeterminate', true);
-
 			$this->UpdateFormField('ImportProgress', 'current', 0);
-
 
 			$allFiles = [];
 			$path = '';
@@ -1364,7 +1389,7 @@ class AirQ extends IPSModule
 			$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Get Filelist from AirQ'));
 			$this->SendDebug('ImportFile', 'Reading path recursive ' . $path, 0);
 			$data = $this->GetFileList($path, false);
-			if (!$data) {
+			if ($data === null) {
 				$txt = $this->Translate('Could not connect to AirQ');
 				$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Reaggregate Variables'));
 				echo $txt;
@@ -1453,6 +1478,11 @@ class AirQ extends IPSModule
 
 				$data = $this->GetFileContent($file, false);
 				$this->SendDebug('ImportFile', $file . ' DATA: ' . print_r($data, true), 0);
+				if ($data === null) {
+					$this->SendDebug('ImportFile', 'Import failed ', 0);
+					echo 'Import failed.';
+					break;
+				}
 
 				$newLastFileRowImported = count($data);
 				if ($lastFileImported == $file && $lastFileRowImported > 0) {
