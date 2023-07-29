@@ -1481,14 +1481,15 @@ declare(strict_types=1);
 			$this->StoreHistoricDataCompleted($importResult);
 
 			$this->UpdateFormField('ImportProgress', 'indeterminate', false);
-			$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Import of') . ' ' . $totalRows . ' ' . $this->Translate('rows successfull'));
+			echo $this->Translate('Import of') . ' ' . $totalRows . ' ' . $this->Translate('rows successfull');
 
 			if ($this->ReadAttributeBoolean(AirQ::ATTRIB_IMPORT_CANCEL)) {
-				$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Import cancelled'));
+				echo $this->Translate('Import cancelled by User');
 				$this->WriteAttributeBoolean(AirQ::ATTRIB_IMPORT_CANCEL, false);
 				return false;
 			}
 
+			
 			return true;
 
 		} catch (Exception $ex) {
@@ -1497,6 +1498,7 @@ declare(strict_types=1);
 
 		} finally {
 			IPS_SemaphoreLeave('AirQImportFile');
+			$this->UpdateFormField('ProgressAlert', 'visible', false);
 		}
 	}
 }
