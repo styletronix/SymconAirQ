@@ -5,7 +5,7 @@ class AirQ extends IPSModule
 {
 	// REaggragation führt oft zu einem Dedlock des Archive Controls... Und somit aller Module und Scripts die darauf zugreifen.
 	// Ursache bisher unklar.
-	const DEBUG_DoNotReaggreagae = true;
+	const DEBUG_DoNotReaggreagae = false;
 
 
 	const ATTRIB_LAST_FILE_IMPORTED = 'lastFileImported';
@@ -1491,19 +1491,21 @@ class AirQ extends IPSModule
 				}
 				$newRowsCount = count($data);
 
-				$this->SendDebug('ImportFile', 'Storing ' . $newRowsCount . ' Rows...', 0);
-				$tempResult = $this->StoreHistoricData($data);
-				if (!$tempResult) {
-					$this->SendDebug('ImportFile', 'Import failed ', 0);
-					echo 'Import failed.';
-					break;
+				if ($newRowsCount > 0) {
+					$this->SendDebug('ImportFile', 'Storing ' . $newRowsCount . ' Rows...', 0);
+					$tempResult = $this->StoreHistoricData($data);
+					if (!$tempResult) {
+						$this->SendDebug('ImportFile', 'Import failed ', 0);
+						echo 'Import failed.';
+						break;
+					}
+					$this->SendDebug('ImportFile', 'Total of ' . count($tempResult) . ' Variables affected.', 0);
+					$importResult = array_unique(array_merge($importResult, $tempResult));
 				}
-				$this->SendDebug('ImportFile', 'Total of ' . count($tempResult) . ' Variables affected.', 0);
+
 				$totalRows += $newRowsCount;
 
 				$this->WriteAttributeInteger(AirQ::ATTRIB_LAST_FILE_ROW_IMPORTED, $newLastFileRowImported);
-
-				$importResult = array_unique(array_merge($importResult, $tempResult));
 
 				if ($count >= $limit) {
 					$this->LogMessage('Limit of ' . $limit . ' files per Import reached.', KL_NOTIFY);
