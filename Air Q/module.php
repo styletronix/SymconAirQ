@@ -1322,8 +1322,6 @@ declare(strict_types=1);
 	}
 	public function ImportAllFiles(int $limit = 100)
 	{
-		ini_set('max_execution_time', '1200'); // 20 Minuten... Kann schon mal vorkommen bei vielen Dateien.
-
 		$this->UpdateFormField('ProgressAlert', 'visible', true);
 		$this->UpdateFormField('ImportProgress', 'caption', $this->Translate('Prepare Import'));
 
