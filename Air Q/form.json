@@ -292,6 +292,10 @@
                         "caption": "",
                         "visible": true,
                         "indeterminate": true
+                    },{
+                        "type": "Button",
+                        "caption": "Cancel",
+                        "onClick": "SXAIRQ_ImportAllFiles_Cancel($id);"
                     }
                 ]
             }
