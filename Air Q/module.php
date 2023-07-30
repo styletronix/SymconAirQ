@@ -1330,18 +1330,15 @@ class AirQ extends IPSModule
 	}
 	private function IsPathLowerThan($path1, $path2)
 	{
-		if (strlen($path1) < strlen($path2)) {
-			$path2 = substr($path2, 0, strlen($path1));
-		}
+		$p1 = explode('/', $path1);
+		$p2 = explode('/', $path2);
 
-		if (strlen($path2) < strlen($path1)) {
-			$path1 = substr($path1, 0, strlen($path2));
-		}
-
-		if ($path1 < $path2) {
-			return true;
-		} else {
-			return false;
+		for ($x = 0; $x < min(count($p1), count($p2)); $x++) {
+			if (is_numeric($p1[$x]) && is_numeric($p2[$x])) {
+				if ((int) $p1[$x] < (int) $p2[$x]) {
+					return true;
+				}
+			}
 		}
 	}
 	public function ResetImportFileProgress()
