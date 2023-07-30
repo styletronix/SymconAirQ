@@ -124,7 +124,8 @@
             "rows successfull": "Zeilen erfolgreich",
             "Another import is already running": "Ein anderer Importvorgang läuft bereits.",
             "An unexpected Exception occured": "Ein unerwarteter Fehler ist aufgetreten",
-            "Import cancelled by User":"Import durch Benutzer abgebrochen"
+            "Import cancelled by User":"Import durch Benutzer abgebrochen",
+            "Cancel": "Abbrechen"
         }
     }
 }
