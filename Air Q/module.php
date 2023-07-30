@@ -1541,5 +1541,69 @@ class AirQ extends IPSModule
 			$this->UpdateFormField('ProgressAlert', 'visible', false);
 		}
 	}
+
+	public function Command_Reboot(){
+		$this->SetDeviceConfig(
+			[
+				"reset" => true
+			]
+		);
+	}
+	public function Command_Shutdown()
+	{
+		$this->SetDeviceConfig(
+			[
+				"shutdown" =>true
+			]
+		);
+	}
+	public function Command_AddWifi(string $ssid, string $key, bool $WiFiIsHidden)
+	{
+		$this->SetDeviceConfig(
+			[
+				"WiFissid"=> $ssid,
+  				"WiFipass"=> $key,
+				"WiFihidden"=> $WiFiIsHidden,
+  				"reset"=> true
+			]
+		);
+	}
+	public function Command_SetRoomType(string $RoomType)
+	{
+		$this->SetDeviceConfig(
+			[
+				"RoomType"=> $RoomType
+			]
+		);
+	}
+	public function Command_SetRoomSize(float $height, float $area)
+	{
+		$this->SetDeviceConfig(
+			[
+				"RoomHeight" => $height,
+				"RoomArea" => $area
+			]
+		);
+	}
+	public function Command_SetAltitute(float $altitude, float $divergence)
+	{
+		$this->SetDeviceConfig(
+			[
+				"Altitude" => [$altitude, $divergence ],
+				"reset"=> true
+			]
+		);
+	}
+	public function Command_SetLED_Theme(string  $left, string  $right)
+	{
+		$this->SetDeviceConfig(
+			[
+				"ledTheme" => [
+					"left" => $left, 
+					"right" => $right
+				]
+			]
+		);
+	}
 }
 ?>
