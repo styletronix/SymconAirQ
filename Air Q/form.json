@@ -157,7 +157,6 @@
                     "name": "Limits",
                     "width": "0px",
                     "add": [],
-                    "onAdd": "SXAIRQ_NewID($id, $Sensors);",
                     "rowCount": 6,
                     "edit": {
                         "type": "List",
