@@ -1,0 +1,12 @@
+{
+    "id": "{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}",
+    "name": "Air Q WebHook",
+    "type": 0,
+    "vendor": "AirQ",
+    "aliases": [],
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "SXAIRQH",
+    "url": "https://github.com/styletronix/SymconAirQ"
+}

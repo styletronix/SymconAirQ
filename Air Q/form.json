@@ -6,26 +6,68 @@
             "caption": "Enable"
         },
         {
-            "type": "ValidationTextBox",
-            "name": "url",
-            "caption": "URL to Air-Q"
+            "type": "Select",
+            "name": "mode",
+            "caption": "Mode",
+            "options": [
+                {
+                    "caption": "Mode 1 - HTTP Request",
+                    "value": 0
+                },
+                {
+                    "caption": "Mode 2 - WebHook (Science version only)",
+                    "value": 1
+                }
+            ]
         },
         {
-            "type": "PasswordTextBox",
-            "name": "password",
-            "caption": "Password"
+            "type": "ExpansionPanel",
+            "caption": "Direct connection to AirQ (for Mode 1 and configuration)",
+            "items": [
+                {
+                    "type": "ValidationTextBox",
+                    "name": "url",
+                    "caption": "URL to Air-Q"
+                },
+                {
+                    "type": "PasswordTextBox",
+                    "name": "password",
+                    "caption": "Password"
+                },
+                {
+                    "type": "NumberSpinner",
+                    "name": "refresh",
+                    "caption": "Refresh interval",
+                    "suffix": "seconds"
+                },
+                {
+                    "type": "NumberSpinner",
+                    "name": "refreshAverage",
+                    "caption": "Refresh interval average calculation",
+                    "suffix": "seconds"
+                }
+            ]
         },
         {
-            "type": "NumberSpinner",
-            "name": "refresh",
-            "caption": "Refresh interval",
-            "suffix": "seconds"
-        },
-        {
-            "type": "NumberSpinner",
-            "name": "refreshAverage",
-            "caption": "Refresh interval average calculation",
-            "suffix": "seconds"
+            "type": "ExpansionPanel",
+            "caption": "WebHook settings (for Mode 2)",
+            "items": [
+                {
+                    "type": "ValidationTextBox",
+                    "name": "WebHookUrl",
+                    "caption": "External URL for webhook"
+                },
+                {
+                    "type": "Label",
+                    "caption": "For example: http://yourDomainOrIPMagicAddress.de/hook/sxairq"
+                },
+                {
+                    "type": "NumberSpinner",
+                    "name": "WebHookInterval",
+                    "caption": "Send Interval",
+                    "suffix": "seconds"
+                }
+            ]
         },
         {
             "type": "Label",
@@ -115,7 +157,6 @@
                     "name": "Limits",
                     "width": "0px",
                     "add": [],
-                    "onAdd": "SXAIRQ_NewID($id, $Sensors);",
                     "rowCount": 6,
                     "edit": {
                         "type": "List",
@@ -201,13 +242,67 @@
     "actions": [
         {
             "type": "Button",
+            "caption": "Test connection",
+            "onClick": "SXAIRQ_TestConnection($id);"
+        },
+        {
+            "type": "Button",
             "caption": "Refresh Sensorlist",
             "onClick": "SXAIRQ_UpdateSensorList($id);"
         },
         {
             "type": "Button",
-            "caption": "Test connection",
-            "onClick": "SXAIRQ_TestConnection($id);"
+            "caption": "Refresh Sensor variable profiles",
+            "onClick": "SXAIRQ_UpdateSensorProfiles($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Sync variable names with configuration",
+            "onClick": "SXAIRQ_UpdateVariableNames($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Configure AirQ to send data to WebHook",
+            "onClick": "SXAIRQ_SetWebHookConfig($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Remove WebHook configuration from AirQ",
+            "onClick": "SXAIRQ_RemoveWebHookConfig($id);"
+        },
+        {
+            "type": "Button",
+            "caption": "Import Data from AirQ (Science version only)",
+            "onClick": "SXAIRQ_ImportAllFiles($id,1000);"
+        },
+        {
+            "type": "PopupAlert",
+            "name": "ProgressAlert",
+            "visible": false,
+            "popup": {
+                "closeCaption": "Ok",
+                "items": [
+                    {
+                        "type": "ProgressBar",
+                        "name": "ImportProgress",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "current": 0,
+                        "caption": "",
+                        "visible": true,
+                        "indeterminate": true
+                    },{
+                        "type": "Button",
+                        "caption": "Cancel",
+                        "onClick": "SXAIRQ_ImportAllFiles_Cancel($id);"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Button",
+            "caption": "Reset import progress",
+            "onClick": "SXAIRQ_ResetImportFileProgress($id);"
         }
     ],
     "status": [

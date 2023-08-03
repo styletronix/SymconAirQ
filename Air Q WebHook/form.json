@@ -1,0 +1,8 @@
+{
+    "elements": [
+        {
+            "type": "Label",
+            "label": "There is nothing to configure here. This Instance automatically passes received data to an Air-Q instance."
+        }
+    ]
+}

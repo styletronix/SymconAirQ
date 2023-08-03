@@ -15,6 +15,12 @@ Dieses Modul verbindet sich mit einem über HTTP erreichbaren Air-Q und liest de
 - Zyklisches auslesen aller Messwerte des Air-Q.
 - Bildung von gleitenden Mittelwerten für verschiedene Zeiträume wie für Auswertung der Warnschwellen nach WHO oder EU Richtlinien notwendig.
 
+#### Neu ab Version 1.2
+- Lesen und schreiben der Air-Q Konfiguration (Science Version).
+
+#### Neu ab Version 1.3
+- AirQ WebHook.
+
 ## 2. Voraussetzungen
 
 - IP-Symcon ab Version 5.5
@@ -115,7 +121,7 @@ Das Modul besitzt keine spezielle WebFront funktion.
 ## 7. PHP-Befehlsreferenz
 
 
-### `bool SXAIRQ_TestConnection(integer $InstanzID);`
+### `bool SXAIRQ_TestConnection(int $InstanzID);`
 Prüft, ob der Air-Q erreichbar ist und die Daten korrekt ausgelesen werden können.
 Der Air-Q muss vor der Verwendung dieser Funktion vollständig konfiguriert und erreichbar sein.
 
@@ -127,7 +133,7 @@ Zusätzlich sind Informationen im DEBUG Fenster zu finden.
 $success = SXAIRQ_TestConnection(12345);
 ```
 
-### `SXAIRQ_Update(integer $InstanzID, boolean $includeAggregated = false);`
+### `SXAIRQ_Update(int $InstanzID, boolean $includeAggregated = false);`
 Aktualisiert die Daten des Air-Q sofort.
 Der Air-Q muss vor der Verwendung dieser Funktion vollständig konfiguriert und erreichbar sein.
 Bei $includeAggregated = true werden zusätzlich die gleitenden Durchschnittswerte berechnet. Wenn false, dann werden die zuletzt berechneten Werte als Referenz genommen.
@@ -137,7 +143,7 @@ Bei $includeAggregated = true werden zusätzlich die gleitenden Durchschnittswer
 SXAIRQ_Update(12345, true);
 ```
 
-### `SXAIRQ_GetDataDecoded(integer $InstanzID);`
+### `SXAIRQ_GetDataDecoded(int $InstanzID);`
 
 Liest die aktuellen Daten aus Air-Q und gibt diese als unbearbeitetes Array mit Key, Value daten aus.
 Liefert Null bei Fehler.
@@ -157,4 +163,102 @@ foreach ($data as $key => $val){
 
 	print ('Sensor ' . $key . ' - Value: ' . $value . "\n");
 }
+```
+
+### `SXAIRQ_SetDeviceConfig(int $InstanceID, array $data)`
+
+Setzt eine oder mehrere Einstellungen im Air-Q. Siehe hierzu das JSOn Format für die Geräteeisntellung unter https://docs.air-q.com/.
+
+Liefert ein Array mit 'id' und 'content' zurück, falls der Aufruf erfolgreich war. Sonst ist der Rückgabewert null.
+
+#### Beispiel:
+```php
+	// Air-Q neu starten:
+	$result = SXAIRQ_SetDeviceConfig(12345, ['reset' => true]);
+	print_r ($result);
+}
+```
+
+```php
+	// Zusätzliches WLAN eintragen.:
+	$result = SXAIRQ_SetDeviceConfig(12345,
+		[
+  			'WiFissid' => 'Ihre WLAN-SSID',
+  			'WiFipass' => 'Ihr WLAN-Key',
+			'reset' => true
+		]);
+	print_r ($result);
+
+```
+
+### `SXAIRQ_GetDeviceConfig(int $InstanceID)`
+
+Ruft die Konfiguration des Air-Q ab und liefert diese als Array.
+Zusätzlich wird die aktuelle Konfiguration in dem Attribut 'DeviceConfig' gespeichert.
+
+#### Beispiel:
+```php
+	$result = SXAIRQ_GetDeviceConfig(12345);
+	print_r ($result);
+```
+
+### `SXAIRQ_GetDeviceConfigCached(int $InstanceID)`
+
+Liefert die gleichen Daten wie `SXAIRQ_GetDeviceConfig(int $InstanceID)`, jedoch aus dem Zwischenspeicher, sofern verfügbar. Liefert `null` wenn keine Daten vorhanden sind.
+Der Zwischenspeicher wird automatisch mit aufrufen von `SXAIRQ_GetDeviceConfig(int $InstanceID)` aktualisiert.
+
+### `SXAIRQ_UpdateSensorProfiles(int $InstanceID)`
+
+Ruft die Konfiguration des Air-Q ab und aktualisiert die Einheiten und Anzahl an Dezimalstellen der Variablenprofile.
+
+```php
+	SXAIRQ_UpdateSensorProfiles(12345);
+```
+
+### `SXAIRQ_StoreDataFromHTTPPost(int $InstanceID, $data, bool $aggregate = true )`
+
+Wertet die Daten, welche direkt vom Air-Q per Webhook geliefert wurden aus. Diese Funktion wird üblicherweise intern vom AirQ WebHook aufgerufen.
+
+Bei verwendung des WebHooks sollten beide Aktualisierungsintervalle auf 0 (deaktiviert) gesetzt werden. Die Berechnung des Durchschnitts erfolgt automatisch beim Empfang von Daten über den WebHook, es sei denn `$aggregate` wurde explizit auf `false` gesetzt.
+
+#### Hinweis:
+Die DeviceID in der AirQ Instanz und der gelieferten Daten müssen übereinstimmen. Der Befehl bricht sonst mit einer Fehlermeldung ab um das vermischen von Daten von verschiedenen Geräten zu verhindern.
+
+#### Beispiel zur WebHook verwendung:
+
+1. AirQ WebHook Instanz unter Kerninstanzen hinzufügen.
+
+2. Im Air-Q mit folgendem Code die Konfiguration zum automatischen senden der Daten aktivieren:
+```php
+$InstanceID = 1234; // Die ID der Air-Q Instanz eintragen !!
+$ExternalURL = 'http://meineDomain.de:3377'; // Hier die Adresse und Port des IP-Symcon Connect Dienstes eintragen.
+
+$config = [
+  'httpPOST' => [
+    'URL' => $ExternalURL . '/hook/sxairq',
+    'Headers' => ['Content-Type' => 'application/json'],
+    'averages' => true,
+    'delay' => 120
+  ]
+];
+
+print_r(SXAIRQ_SetDeviceConfig($InstanceID, $config));
+```
+
+Als Ergebnis wird der Air-Q alle 120 Sekunden die Durchschnittswerte an IP-Symcon senden.
+Im Webhook wird automatisch nach einer Air-Q Instanz mit der richtigen DeviceID gesucht und dort die Daten aktualisiert.
+
+Hierdurch kann ein WebHook für mehrere Air-Qs verwendet werden. Es muss jedoch zwingend die Seriennummer in der Variable `DeviceID` der einzelnen AirQ instanzen hinterlegt sein.
+
+Die Übertragung von Air-Q kann mit folgendem Skript wieder deaktiviert werden:
+```php
+	$InstanceID = 1234; // Die ID der Air-Q Instanz eintragen !!
+
+	$config = [
+  	'httpPOST' => [
+    	'URL' => null
+  	]
+	];
+
+	SXAIRQ_SetDeviceConfig($InstanceID, $config);
 ```

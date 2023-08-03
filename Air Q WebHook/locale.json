@@ -1,0 +1,7 @@
+{
+    "translations": {
+        "de": {
+            "There is nothing to configure here. This Instance automatically passes received data to an Air-Q instance.": "Hier gibt es nichts zum einstellen. Diese Instanz überträgt automatisch empfangene Daten an die passende AirQ Instanz."
+        }
+    }
+}
