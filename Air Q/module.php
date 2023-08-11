@@ -344,7 +344,7 @@ class AirQ extends IPSModule
 		return json_encode($data);
 	}
 
-	protected function CreateWebhookInstance(){
+	public function CreateWebhookInstance(){
 		$hookId = @IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
 		if (!$hookId) {
 			$hookId = IPS_CreateInstance("{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}");
