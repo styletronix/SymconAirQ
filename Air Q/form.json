@@ -96,7 +96,7 @@
         },
         {
             "type": "Label",
-            "caption": "Use 'Refresh Sensorlist' to populate the List with Sensors after applying changes or enter Sensornames yourself."
+            "caption": "Use \"Refresh Sensorlist\" to populate the List with Sensors after applying changes or enter Sensornames yourself."
         },
         {
             "type": "List",
