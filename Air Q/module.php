@@ -337,7 +337,7 @@ class AirQ extends IPSModule
 			if (!$hookId) {
 				foreach($data['elements'] as &$item){
 					if (@$item['name'] == 'WebHookRequiredLabel' || @$item['name'] == 'WebHookRequiredButton')
-					$item['visible'] = true;
+					$item['visible'] = 'true';
 				}
 			}
 			return json_encode($data);
