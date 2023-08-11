@@ -335,7 +335,7 @@ class AirQ extends IPSModule
 			$hookId = @IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
 			if (!$hookId) {
 				foreach($data->elements as &$item){
-					if ($item->name == 'WebHookRequiredLabel' || $item->name == 'WebHookRequiredButton')
+					if (@$item->name == 'WebHookRequiredLabel' || @$item->name == 'WebHookRequiredButton')
 					$item->visible = true;
 				}
 			}
