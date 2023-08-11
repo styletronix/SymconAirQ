@@ -243,7 +243,9 @@ class AirQ extends IPSModule
 		$this->RegisterTimer(AirQ::TIMER_UPDATEAVERAGE, ($this->ReadPropertyBoolean(AirQ::PROP_ACTIVE) ? $this->ReadPropertyInteger(AirQ::PROP_REFRESH_AVERAGE) * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "' . AirQ::ACTION_TIMERCALLBACK . '", "' . AirQ::TIMER_UPDATEAVERAGE . '");');
 
 		if ($this->ReadPropertyInteger(AirQ::PROP_MODE) == 1 && $this->ReadPropertyBoolean(AirQ::PROP_ACTIVE)) {
-			$this->UpdateFormField('CreateHookPopup', 'visible', true);
+			$this->SetStatus(205);
+			$this->UpdateFormField('WebHookRequiredLabel', 'visible', true);
+			$this->UpdateFormField('WebHookRequiredButton', 'visible', true);
 		}
 	}
 
@@ -606,7 +608,13 @@ class AirQ extends IPSModule
 			$this->WriteSensorDataValues($data, $includeAggregated);
 			$this->WriteStatusValues($data);
 
-			$this->SetStatus(102);
+			if ($this->ReadPropertyInteger(AirQ::PROP_MODE) == 1 && $this->ReadPropertyBoolean(AirQ::PROP_ACTIVE)) {
+				$this->SetStatus(205);
+				$this->UpdateFormField('WebHookRequiredLabel', 'visible', true);
+				$this->UpdateFormField('WebHookRequiredButton', 'visible', true);
+			}else{
+				$this->SetStatus(102);
+			}
 		}
 	}
 	private function GetProfileNameForSensor(array $sensor)

@@ -1,27 +1,17 @@
 {
     "elements": [
         {
-            "type": "PopupAlert",
-            "name": "CreateHookPopup",
             "visible": false,
-            "popup": {
-                "closeCaption": "Cancel",
-                "items": [
-                    {
-                        "type": "Label",
-                        "caption": "For Mode2, a Air-Q WebHook Core-Instance is required."
-                    },
-                    {
-                        "type": "Label",
-                        "caption": "Would you like to create one now?"
-                    },
-                    {
-                        "type": "Button",
-                        "caption": "Create Air-Q WebHook",
-                        "onClick": "SXAIRQ_CreateWebhookInstance($id);"
-                    }
-                ]
-            }
+            "name": "WebHookRequiredLabel",
+            "type": "Label",
+            "caption": "For Mode2, a Air-Q WebHook Core-Instance is required."
+        },
+        {
+            "visible": false,
+            "name": "WebHookRequiredButton",
+            "type": "Button",
+            "caption": "Create Air-Q WebHook",
+            "onClick": "SXAIRQ_CreateWebhookInstance($id);"
         },
         {
             "type": "CheckBox",
@@ -315,7 +305,8 @@
                         "caption": "",
                         "visible": true,
                         "indeterminate": true
-                    },{
+                    },
+                    {
                         "type": "Button",
                         "caption": "Cancel",
                         "onClick": "SXAIRQ_ImportAllFiles_Cancel($id);"
