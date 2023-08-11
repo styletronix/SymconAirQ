@@ -324,19 +324,26 @@ class AirQ extends IPSModule
 
 		if ($this->ReadPropertyBoolean(AirQ::PROP_ACTIVE) && $this->ReadPropertyInteger('mode') == 0) {
 			$this->Update(true);
-		}else{
-			$this->UpdateWebHookMessage();
 		}
 	}
-	
-private function UpdateWebHookMessage(){
-		$hookId = @IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
-		if ($this->ReadPropertyInteger(AirQ::PROP_MODE) == 1 && $this->ReadPropertyBoolean(AirQ::PROP_ACTIVE) && !$hookId) {
-			$this->SetStatus(205);
-			$this->UpdateFormField('WebHookRequiredLabel', 'visible', true);
-			$this->UpdateFormField('WebHookRequiredButton', 'visible', true);
+
+	public function GetConfigurationForm()
+	{
+		$data = json_decode(file_get_contents(__DIR__ . "/form.json"));
+
+		if ($this->ReadPropertyInteger(AirQ::PROP_MODE) == 1){
+			$hookId = @IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
+			if (!$hookId) {
+				foreach($data->elements as &$item){
+					if ($item->name=='WebHookRequiredLabel' || $item->name == 'WebHookRequiredButton')
+					$item->visible = true;
+				}
+			}
 		}
-}
+		
+		return json_encode($data);
+	}
+
 	protected function CreateWebhookInstance(){
 		$hookId = @IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
 		if (!$hookId) {
