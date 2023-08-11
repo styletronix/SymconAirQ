@@ -242,6 +242,9 @@ class AirQ extends IPSModule
 		$this->RegisterTimer(AirQ::TIMER_UPDATEHISTORICDATA, 0, 'IPS_RequestAction($_IPS["TARGET"], "' . AirQ::ACTION_TIMERCALLBACK . '", "' . AirQ::TIMER_UPDATEHISTORICDATA . '");');
 		$this->RegisterTimer(AirQ::TIMER_UPDATEAVERAGE, ($this->ReadPropertyBoolean(AirQ::PROP_ACTIVE) ? $this->ReadPropertyInteger(AirQ::PROP_REFRESH_AVERAGE) * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "' . AirQ::ACTION_TIMERCALLBACK . '", "' . AirQ::TIMER_UPDATEAVERAGE . '");');
 
+		if ($this->ReadPropertyInteger(AirQ::PROP_MODE) == 1 && $this->ReadPropertyBoolean(AirQ::PROP_ACTIVE)) {
+			$this->UpdateFormField('CreateHookPopup', 'visible', true);
+		}
 	}
 
 	public function Destroy()
@@ -325,10 +328,6 @@ class AirQ extends IPSModule
 
 		if ($this->ReadPropertyBoolean(AirQ::PROP_ACTIVE) && $this->ReadPropertyInteger('mode') == 0) {
 			$this->Update(true);
-		}
-
-		if ($this->ReadPropertyInteger(AirQ::PROP_MODE) == 1 && $this->ReadPropertyBoolean(AirQ::PROP_ACTIVE)) {
-			$this->UpdateFormField('CreateHookPopup', 'visible', true);
 		}
 	}
 
