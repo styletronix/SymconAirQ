@@ -319,9 +319,9 @@ class AirQ extends IPSModule
 		$this->SetTimerInterval(AirQ::TIMER_UPDATE, $refresh);
 		$this->SetTimerInterval(AirQ::TIMER_UPDATEAVERAGE, $refreshAverage);
 
-		if ($this->ReadPropertyBoolean(AirQ::PROP_ACTIVE) && $this->ReadPropertyInteger('mode') == 0) {
-			$this->Update(true);
-		}
+		// if ($this->ReadPropertyBoolean(AirQ::PROP_ACTIVE) && $this->ReadPropertyInteger('mode') == 0) {
+		// 	$this->Update(true);
+		// }
 	}
 
 	// public function GetConfigurationForm()
