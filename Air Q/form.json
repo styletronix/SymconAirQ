@@ -20,6 +20,7 @@
                 }
             ]
         },
+
         {
             "type": "ExpansionPanel",
             "caption": "Direct connection to AirQ (for Mode 1 and configuration)",
@@ -304,7 +305,30 @@
             "type": "Button",
             "caption": "Reset import progress",
             "onClick": "SXAIRQ_ResetImportFileProgress($id);"
-        }
+        },
+        {
+            "type": "CreateHookPopup",
+            "name": "Create Air-Q WebHook",
+            "visible": false,
+            "popup": {
+                "closeCaption": "Cancel",
+                "items": [
+                    {
+                        "type": "Label",
+                        "caption": "For Mode2, a Air-Q WebHook Core-Instance is required."
+                    },
+                    {
+                        "type": "Label",
+                        "caption": "Would you like to create one now?"
+                    },
+                    {
+                        "type": "Button",
+                        "caption": "Create Air-Q WebHook",
+                        "onClick": "SXAIRQ_CreateWebhookInstance($id);"
+                    }
+                ]
+            }
+        },
     ],
     "status": [
         {
@@ -331,6 +355,11 @@
             "code": 204,
             "icon": "error",
             "caption": "URL or password missing."
+        },
+        {
+            "code": 205,
+            "icon": "error",
+            "caption": "Air-Q WebHook Instance missing."
         }
     ]
 }

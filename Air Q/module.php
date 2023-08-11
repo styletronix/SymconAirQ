@@ -241,6 +241,7 @@ class AirQ extends IPSModule
 		$this->RegisterTimer(AirQ::TIMER_UPDATE, ($this->ReadPropertyBoolean(AirQ::PROP_ACTIVE) ? $this->ReadPropertyInteger(AirQ::PROP_REFRESH) * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "' . AirQ::ACTION_TIMERCALLBACK . '", "' . AirQ::TIMER_UPDATE . '");');
 		$this->RegisterTimer(AirQ::TIMER_UPDATEHISTORICDATA, 0, 'IPS_RequestAction($_IPS["TARGET"], "' . AirQ::ACTION_TIMERCALLBACK . '", "' . AirQ::TIMER_UPDATEHISTORICDATA . '");');
 		$this->RegisterTimer(AirQ::TIMER_UPDATEAVERAGE, ($this->ReadPropertyBoolean(AirQ::PROP_ACTIVE) ? $this->ReadPropertyInteger(AirQ::PROP_REFRESH_AVERAGE) * 1000 : 0), 'IPS_RequestAction($_IPS["TARGET"], "' . AirQ::ACTION_TIMERCALLBACK . '", "' . AirQ::TIMER_UPDATEAVERAGE . '");');
+
 	}
 
 	public function Destroy()
@@ -326,14 +327,19 @@ class AirQ extends IPSModule
 			$this->Update(true);
 		}
 
-		if ($this->ReadPropertyInteger(AirQ::PROP_MODE) == 1) {
-			$hookId = IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
-			if (!$hookId) {
-				$hookId = IPS_CreateInstance("{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}");
-				IPS_SetName($hookId, "AirQ WebHook");
-				IPS_ApplyChanges($hookId);
-			}
+		if ($this->ReadPropertyInteger(AirQ::PROP_MODE) == 1 && $this->ReadPropertyBoolean(AirQ::PROP_ACTIVE)) {
+			$this->UpdateFormField('CreateHookPopup', 'visible', true);
 		}
+	}
+
+	protected function CreateWebhookInstance(){
+		$hookId = IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
+		if (!$hookId) {
+			$hookId = IPS_CreateInstance("{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}");
+			IPS_SetName($hookId, "AirQ WebHook");
+			IPS_ApplyChanges($hookId);
+		}
+		return $hookId;
 	}
 
 	private function CreateProfileIfNotExists(string $name, int $digits, string $suffix, float $min, float $max, int $type = 2)
