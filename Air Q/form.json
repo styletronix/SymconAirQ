@@ -1,13 +1,11 @@
 {
     "elements": [
         {
-            "visible": false,
             "name": "WebHookRequiredLabel",
             "type": "Label",
             "caption": "For Mode2, a Air-Q WebHook Core-Instance is required."
         },
         {
-            "visible": false,
             "name": "WebHookRequiredButton",
             "type": "Button",
             "caption": "Create Air-Q WebHook",
