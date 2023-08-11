@@ -306,8 +306,8 @@
             "onClick": "SXAIRQ_ResetImportFileProgress($id);"
         },
         {
-            "type": "CreateHookPopup",
-            "name": "Create Air-Q WebHook",
+            "type": "PopupAlert",
+            "name": "CreateHookPopup",
             "visible": false,
             "popup": {
                 "closeCaption": "Cancel",
