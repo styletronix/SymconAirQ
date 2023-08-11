@@ -327,24 +327,24 @@ class AirQ extends IPSModule
 		}
 	}
 
-	// public function GetConfigurationForm()
-	// {
+	public function GetConfigurationForm()
+	{
 		
 
-	// 	if ($this->ReadPropertyInteger(AirQ::PROP_MODE) == 1){
-	// 		$data = json_decode(file_get_contents(__DIR__ . "/form.json"), true);
-	// 		$hookId = @IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
-	// 		if (!$hookId) {
-	// 			foreach($data['elements'] as &$item){
-	// 				if (@$item['name'] == 'WebHookRequiredLabel' || @$item['name'] == 'WebHookRequiredButton')
-	// 				$item['visible'] = true;
-	// 			}
-	// 		}
-	// 		return json_encode($data);
-	// 	}else{
-	// 		return file_get_contents(__DIR__ . "/form.json");
-	// 	}
-	// }
+		if ($this->ReadPropertyInteger(AirQ::PROP_MODE) == 1){
+			$data = json_decode(file_get_contents(__DIR__ . "/form.json"), true);
+			$hookId = @IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
+			if (!$hookId) {
+				foreach($data['elements'] as &$item){
+					if (@$item['name'] == 'WebHookRequiredLabel' || @$item['name'] == 'WebHookRequiredButton')
+					$item['visible'] = true;
+				}
+			}
+			return json_encode($data);
+		}else{
+			return file_get_contents(__DIR__ . "/form.json");
+		}
+	}
 
 	public function CreateWebhookInstance(){
 		$hookId = @IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
