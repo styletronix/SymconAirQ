@@ -1,19 +1,6 @@
 {
     "elements": [
         {
-            "visible": true,
-            "name": "WebHookRequiredLabel",
-            "type": "Label",
-            "caption": "For Mode2, a Air-Q WebHook Core-Instance is required."
-        },
-        {
-            "visible": true,
-            "name": "WebHookRequiredButton",
-            "type": "Button",
-            "caption": "Create Air-Q WebHook",
-            "onClick": "SXAIRQ_CreateWebhookInstance($id);"
-        },
-        {
             "type": "CheckBox",
             "name": "active",
             "caption": "Enable"
@@ -65,6 +52,19 @@
             "type": "ExpansionPanel",
             "caption": "WebHook settings (for Mode 2)",
             "items": [
+                {
+                "visible": true,
+                "name": "WebHookRequiredLabel",
+                "type": "Label",
+                "caption": "For Mode2, a Air-Q WebHook Core-Instance is required."
+            },
+            {
+                "visible": true,
+                "name": "WebHookRequiredButton",
+                "type": "Button",
+                "caption": "Create Air-Q WebHook",
+                "onClick": "SXAIRQ_CreateWebhookInstance($id);"
+            },
                 {
                     "type": "ValidationTextBox",
                     "name": "WebHookUrl",

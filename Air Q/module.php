@@ -349,6 +349,9 @@ class AirQ extends IPSModule
 			$hookId = IPS_CreateInstance("{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}");
 			IPS_SetName($hookId, "AirQ WebHook");
 			IPS_ApplyChanges($hookId);
+			echo $this->Translate('AirQ WebHook created successfully');
+		}else{
+			echo $this->Translate('AirQ WebHook already exists');
 		}
 		return $hookId;
 	}
@@ -503,7 +506,7 @@ class AirQ extends IPSModule
 		print_r($result);
 		return $result;
 	}
-	private function GetFriendlySensorName(int $sensorID)
+	private function GetFriendlySensorName(string $sensorID)
 	{
 		foreach (AirQ::$defaultSensornames as $key => $val) {
 			if (strtolower($key) == strtolower($sensorID)) {

@@ -129,7 +129,9 @@
             "For Mode2, a Air-Q WebHook Core-Instance is required.": "Für Modus 2 wird eine Air-Q WebHook Kern-Instanz benötigt.",
             "Would you like to create one now?": "Soll jetzt eine Instanz automatisch erstellt werden?",
             "Create Air-Q WebHook": "Air-Q WebHook erstellen.",
-            "Air-Q WebHook Instance missing.": "Air-Q WebHook Instanz fehlt."
+            "Air-Q WebHook Instance missing.": "Air-Q WebHook Instanz fehlt.",
+            "AirQ WebHook created successfully":"Air-Q WebHook erfolgreich erstellt",
+            "AirQ WebHook already exists": "Air-Q WebHook existiert bereits"
         }
     }
 }
