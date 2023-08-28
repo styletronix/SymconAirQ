@@ -53,6 +53,19 @@
             "caption": "WebHook settings (for Mode 2)",
             "items": [
                 {
+                "visible": true,
+                "name": "WebHookRequiredLabel",
+                "type": "Label",
+                "caption": "For Mode2, a Air-Q WebHook Core-Instance is required."
+            },
+            {
+                "visible": true,
+                "name": "WebHookRequiredButton",
+                "type": "Button",
+                "caption": "Create Air-Q WebHook",
+                "onClick": "SXAIRQ_CreateWebhookInstance($id);"
+            },
+                {
                     "type": "ValidationTextBox",
                     "name": "WebHookUrl",
                     "caption": "External URL for webhook"
@@ -83,7 +96,7 @@
         },
         {
             "type": "Label",
-            "caption": "Use 'Refresh Sensorlist' to populate the List with Sensors after applying changes or enter Sensornames yourself."
+            "caption": "Use \"Refresh Sensorlist\" to populate the List with Sensors after applying changes or enter Sensornames yourself."
         },
         {
             "type": "List",
@@ -291,7 +304,8 @@
                         "caption": "",
                         "visible": true,
                         "indeterminate": true
-                    },{
+                    },
+                    {
                         "type": "Button",
                         "caption": "Cancel",
                         "onClick": "SXAIRQ_ImportAllFiles_Cancel($id);"
@@ -330,6 +344,11 @@
             "code": 204,
             "icon": "error",
             "caption": "URL or password missing."
+        },
+        {
+            "code": 205,
+            "icon": "error",
+            "caption": "Air-Q WebHook Instance missing."
         }
     ]
 }

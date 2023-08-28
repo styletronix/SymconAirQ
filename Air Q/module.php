@@ -299,10 +299,7 @@ class AirQ extends IPSModule
 		echo $this->Translate("Failed. See Debug window for details.");
 		return false;
 	}
-	// private function UpdateHTML(){
-// 	$this->GetIDForIdent(AirQ::IDENT_HTML_LIMITS);
 
-	// }
 	public function ApplyChanges()
 	{
 		parent::ApplyChanges();
@@ -322,18 +319,41 @@ class AirQ extends IPSModule
 		$this->SetTimerInterval(AirQ::TIMER_UPDATE, $refresh);
 		$this->SetTimerInterval(AirQ::TIMER_UPDATEAVERAGE, $refreshAverage);
 
-		if ($this->ReadPropertyBoolean(AirQ::PROP_ACTIVE) && $this->ReadPropertyInteger('mode') == 0) {
-			$this->Update(true);
-		}
+		// if ($this->ReadPropertyBoolean(AirQ::PROP_ACTIVE) && $this->ReadPropertyInteger('mode') == 0) {
+		// 	$this->Update(true);
+		// }
+	}
 
-		if ($this->ReadPropertyInteger(AirQ::PROP_MODE) == 1) {
-			$hookId = IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
-			if (!$hookId) {
-				$hookId = IPS_CreateInstance("{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}");
-				IPS_SetName($hookId, "AirQ WebHook");
-				IPS_ApplyChanges($hookId);
-			}
+	// public function GetConfigurationForm()
+	// {
+		
+
+	// 	if ($this->ReadPropertyInteger(AirQ::PROP_MODE) == 1){
+	// 		$data = json_decode(file_get_contents(__DIR__ . "/form.json"), true);
+	// 		$hookId = @IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
+	// 		if (!$hookId) {
+	// 			foreach($data['elements'] as &$item){
+	// 				if (@$item['name'] == 'WebHookRequiredLabel' || @$item['name'] == 'WebHookRequiredButton')
+	// 				$item['visible'] = 'true';
+	// 			}
+	// 		}
+	// 		return json_encode($data);
+	// 	}else{
+	// 		return file_get_contents(__DIR__ . "/form.json");
+	// 	}
+	// }
+
+	public function CreateWebhookInstance(){
+		$hookId = @IPS_GetInstanceListByModuleID('{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}')[0];
+		if (!$hookId) {
+			$hookId = IPS_CreateInstance("{9D7B695F-659C-4FBC-A6FF-9310E2CA54DD}");
+			IPS_SetName($hookId, "AirQ WebHook");
+			IPS_ApplyChanges($hookId);
+			echo $this->Translate('AirQ WebHook created successfully');
+		}else{
+			echo $this->Translate('AirQ WebHook already exists');
 		}
+		return $hookId;
 	}
 
 	private function CreateProfileIfNotExists(string $name, int $digits, string $suffix, float $min, float $max, int $type = 2)
@@ -486,7 +506,7 @@ class AirQ extends IPSModule
 		print_r($result);
 		return $result;
 	}
-	private function GetFriendlySensorName(int $sensorID)
+	private function GetFriendlySensorName(string $sensorID)
 	{
 		foreach (AirQ::$defaultSensornames as $key => $val) {
 			if (strtolower($key) == strtolower($sensorID)) {
