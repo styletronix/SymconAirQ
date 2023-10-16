@@ -508,7 +508,7 @@ class AirQ extends IPSModule
 	}
 	private function GetFriendlySensorName(string $sensorID)
 	{
-		foreach (AirQ::$defaultSensornames as $key => $val) {
+		foreach (AirQ::$defaultSensors as $key => $val) {
 			if (strtolower($key) == strtolower($sensorID)) {
 				if ($val['friendlyName']) {
 					return $this->Translate($val['friendlyName']);
